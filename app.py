@@ -1,6 +1,7 @@
 import os
 import asyncio
-from aiogram import Bot, Dispatcher
+from aiogram.client.bot import Bot, BotSettings
+from aiogram.client.session.aiohttp import AiohttpSession, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
@@ -14,7 +15,7 @@ if not TOKEN:
 
 # Инициализация бота и диспетчера
 from aiogram import Bot
-bot = Bot(token=TOKEN, parse_mode='HTML')
+bot = Bot(token=TOKEN, session=AiohttpSession(), settings=BotSettings(parse_mode='HTML'))
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
