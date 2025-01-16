@@ -32,9 +32,6 @@ app = web.Application()
 dp = Dispatcher()
 bot = Bot(token="7717648561:AAELGQaKsOQNaNDu3u7gOUTX9AvlBYoqPVc")
 
-app.router.add_post("/webhook", dp.webhook_handler)
-
-
 application.run_polling()
 
 async def start(update: Update, context=None):
