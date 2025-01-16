@@ -1,13 +1,11 @@
 import os
 import asyncio
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
-from aiogram.enums import ParseMode  # Импортируем ParseMode
 
 # Получение токена из переменной окружения
 TOKEN = os.getenv('BOT_TOKEN')
@@ -15,7 +13,7 @@ if not TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная BOT_TOKEN установлена.")
 
 # Инициализация бота и диспетчера с использованием DefaultBotProperties
-bot = Bot(token=TOKEN, session=AiohttpSession(), default=ParseMode.HTML)
+bot = Bot(token=TOKEN, session=AiohttpSession(), default=types.ParseMode.HTML)
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
@@ -28,7 +26,7 @@ web_button = InlineKeyboardMarkup(
 
 # Обработчик команды /start
 @dp.message(Command("start"))
-async def start_handler(message: Message):
+async def start_handler(message: types.Message):
     await message.answer(
         "Добро пожаловать в Казино Бот! \n\n"
         "Вы можете играть в игры и проверять свой баланс. Используйте кнопки ниже.",
@@ -37,12 +35,12 @@ async def start_handler(message: Message):
 
 # Обработчик команды /balance
 @dp.message(Command("balance"))
-async def balance_handler(message: Message):
+async def balance_handler(message: types.Message):
     await message.answer("Ваш текущий баланс: 100 монет")
 
 # Обработчик команды /help
 @dp.message(Command("help"))
-async def help_handler(message: Message):
+async def help_handler(message: types.Message):
     await message.answer(
         "Используйте команды или кнопки для взаимодействия:\n"
         "- /start для начала\n"
