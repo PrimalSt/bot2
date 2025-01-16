@@ -1,6 +1,6 @@
 import os
 import asyncio
-from aiogram.client.bot import Bot, BotSettings
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.session.aiohttp import AiohttpSession, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
@@ -15,7 +15,7 @@ if not TOKEN:
 
 # Инициализация бота и диспетчера
 from aiogram import Bot
-bot = Bot(token=TOKEN, session=AiohttpSession(), settings=BotSettings(parse_mode='HTML'))
+bot = Bot(token=TOKEN, session=AiohttpSession(), parse_mode='HTML')
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
@@ -85,3 +85,4 @@ app.on_shutdown.append(on_shutdown)
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))  # Используем порт из переменной окружения Render
     web.run_app(app, host="0.0.0.0", port=port)
+
