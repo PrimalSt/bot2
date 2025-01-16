@@ -47,5 +47,7 @@ def webhook():
     application.process_update(update)
     return 'ok'
 
-if __name__ == '__main__':
-    app.run(port=8443)
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))  # Используем порт из переменной окружения
+    app.run(host="0.0.0.0", port=port)  # Привязываем приложение ко всем интерфейсам
