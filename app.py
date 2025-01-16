@@ -7,14 +7,15 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
+from aiogram.enums import ParseMode  # Импортируем ParseMode
 
 # Получение токена из переменной окружения
 TOKEN = os.getenv('BOT_TOKEN')
 if not TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная BOT_TOKEN установлена.")
 
-# Инициализация бота и диспетчера
-bot = Bot(token=TOKEN, session=AiohttpSession(), parse_mode='HTML')
+# Инициализация бота и диспетчера с использованием DefaultBotProperties
+bot = Bot(token=TOKEN, session=AiohttpSession(), default=ParseMode.HTML)
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
