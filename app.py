@@ -2,7 +2,7 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
@@ -43,13 +43,14 @@ async def balance_handler(message: Message):
 @dp.message(Command("help"))
 async def help_handler(message: Message):
     await message.answer(
-        "Используйте команды или кнопки для взаимодействия:" 
-        "- /start для начала" 
-        "- /balance для проверки баланса" 
-        "- /help для получения справки")
+        "Используйте команды или кнопки для взаимодействия:\n" 
+        "- /start для начала\n" 
+        "- /balance для проверки баланса\n" 
+        "- /help для получения справки"
+    )
 
 async def on_startup(app: web.Application):
-    webhook_url = "https://https://bot2-ksjg.onrender.com/webhook"  # Замените на ваш домен
+    webhook_url = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"  # Используем динамическое получение домена
     await bot.set_webhook(webhook_url)
 
 async def on_shutdown(app: web.Application):
