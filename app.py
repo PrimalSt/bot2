@@ -32,20 +32,23 @@ async def start_handler(message: types.Message):
         reply_markup=web_button
     )
 
+# Обработчик для получения обновлений от Telegram
+async def handle_webhook(request):
+    json_data = await request.json()
+    update = types.Update(**json_data)
+    await dp.process_update(update)
+    return web.Response(status=200)
+
 async def on_startup(app: web.Application):
-    webhook_url = "https://bot2-ksjg.onrender.com/webhook"  # Используем динамическое получение домена
+    webhook_url = "https://bot2-ksjg.onrender.com/webhook"  # Убедитесь, что этот URL доступен
     await bot.set_webhook(webhook_url)
 
 async def on_shutdown(app: web.Application):
-    await bot.delete_webhook()  # Удаляем вебхук без вызова get_session()
-
-# Маршрут для веб-приложения
-async def webapp_handler(request):
-    return web.Response(text="Hello, this is your web app!")
+    await bot.delete_webhook()  # Удаляем вебхук
 
 # Настройка приложения aiohttp
 app = web.Application()
-app.router.add_get('/webapp', webapp_handler)  # Добавление маршрута для веб-приложения
+app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
 
 # Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
