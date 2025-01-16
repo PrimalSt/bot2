@@ -36,7 +36,13 @@ async def start_handler(message: types.Message):
 async def handle_webhook(request):
     json_data = await request.json()
     update = types.Update(**json_data)
-    await dp.process_update(update)
+
+    # Проверяем тип обновления и вызываем соответствующий обработчик.
+    if update.message and update.message.text:
+        message = update.message
+        if message.text == "/start":
+            await start_handler(message)
+    
     return web.Response(status=200)
 
 async def on_startup(app: web.Application):
