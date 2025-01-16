@@ -37,7 +37,7 @@ async def on_startup(app: web.Application):
     await bot.set_webhook(webhook_url)
 
 async def on_shutdown(app: web.Application):
-    await bot.delete_webhook()  # Удаляем вебхук
+    await bot.delete_webhook()  # Удаляем вебхук без вызова get_session()
 
 # Маршрут для веб-приложения
 async def webapp_handler(request):
