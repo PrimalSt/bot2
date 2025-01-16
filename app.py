@@ -42,9 +42,8 @@ application.add_handler(CommandHandler("start", start))
 application.add_handler(CallbackQueryHandler(play, pattern='play'))
 application.add_handler(CallbackQueryHandler(rules, pattern='rules'))
 
-@app.route(f"/{TOKEN}", methods=['POST'])
+@app.route("/webhook", methods=['POST'])
 def webhook():
-    """Обработка обновлений, получаемых через вебхук."""
     update = Update.de_json(request.get_json(), application.bot)
     application.process_update(update)
     return 'ok'
