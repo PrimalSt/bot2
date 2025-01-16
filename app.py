@@ -6,15 +6,14 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
-from aiogram.enums import ParseMode  # Импортируем ParseMode
 
 # Получение токена из переменной окружения
 TOKEN = os.getenv('BOT_TOKEN')
 if not TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная BOT_TOKEN установлена.")
 
-# Инициализация бота и диспетчера с использованием DefaultBotProperties
-bot = Bot(token=TOKEN, session=AiohttpSession(), default=types.DefaultBotProperties(parse_mode=ParseMode.HTML))
+# Инициализация бота и диспетчера без параметров по умолчанию
+bot = Bot(token=TOKEN, session=AiohttpSession())
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
@@ -73,3 +72,4 @@ app.on_shutdown.append(on_shutdown)
 # Запуск приложения
 if __name__ == '__main__':
     web.run_app(app, host='0.0.0.0', port=int(os.getenv('PORT', 8080)))  # Порт можно задать через переменные окружения или использовать 8080 по умолчанию.
+
