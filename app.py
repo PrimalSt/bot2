@@ -17,7 +17,7 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
-casino_web_app = WebAppInfo(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webapp")  # Домен для веб-приложения
+casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")  # Домен для веб-приложения
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
@@ -49,7 +49,7 @@ async def help_handler(message: Message):
     )
 
 async def on_startup(app: web.Application):
-    webhook_url = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"  # Используем динамическое получение домена
+    webhook_url = "https://bot2-ksjg.onrender.com/webhook"  # Используем динамическое получение домена
     await bot.set_webhook(webhook_url)
 
 async def on_shutdown(app: web.Application):
