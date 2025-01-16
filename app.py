@@ -2,7 +2,8 @@ from flask import Flask, request
 from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 from aiogram import Dispatcher, Bot
-from aiogram.webhook.aiohttp_server import setup_application
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
 import random
 import os
@@ -10,7 +11,10 @@ import asyncio
 
 
 
-TOKEN = os.getenv('TOKEN')  # Используем переменные окружения для безопасности
+TOKEN = os.getenv('BOT_TOKEN', '7717648561:AAELGQaKsOQNaNDu3u7gOUTX9AvlBYoqPVc') # Используем переменные окружения для безопасности
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher(storage=MemoryStorage())
 
 app = Flask(__name__)
 # Создаем объект приложения для работы с Telegram API
@@ -67,8 +71,25 @@ def webhook():
     update = Update.de_json(request.get_json(), application.bot)
     application.process_update(update)
     return 'ok', 200
-    
+
+@dp.message(commands=["start"])
+async def start_handler(message):
+    await message.answer("Добро пожаловать в казино-бот!")
+
+async def on_startup(app):
+    # Установка вебхука
+    await bot.set_webhook("https://<ваш-домен-на-render>/webhook")
+
+async def on_shutdown(app):
+    # Удаление вебхука
+    await bot.delete_webhook()
+
+app = web.Application()
+setup_application(app, dp, bot=bot)
+app.on_startup.append(on_startup)
+app.on_shutdown.append(on_shutdown)
 
 
 if __name__ == "__main__":
-    web.run_app(app, host="0.0.0.0", port=5000) # Привязываем приложение ко всем интерфейсам
+    port = int(os.getenv('PORT', 8080))  # Используйте порт из переменной окружения
+    web.run_app(app, host="0.0.0.0", port=port) # Привязываем приложение ко всем интерфейсам
