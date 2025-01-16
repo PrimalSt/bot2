@@ -13,7 +13,8 @@ if not TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная BOT_TOKEN установлена.")
 
 # Инициализация бота и диспетчера
-bot = Bot(token=TOKEN, parse_mode='HTML')
+from aiogram.client.session import DefaultBotProperties
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
