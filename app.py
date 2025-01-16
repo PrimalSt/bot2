@@ -17,7 +17,7 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
-casino_web_app = WebAppInfo(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/templates/index.html")  # Замените путь для вашего HTML
+casino_web_app = WebAppInfo(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webapp")  # Домен для веб-приложения
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
@@ -54,6 +54,23 @@ async def on_startup(app: web.Application):
 
 async def on_shutdown(app: web.Application):
     await bot.delete_webhook()
+
+# Маршрут для веб-приложения
+@app.route("/webapp")
+async def webapp_handler(request):
+    return web.Response(text="""
+        <!DOCTYPE html>
+        <html lang="ru">
+        <head>
+            <title>Казино Бот</title>
+            <style>body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }</style>
+        </head>
+        <body>
+            <h1>Добро пожаловать в Казино!</h1>
+            <button onclick="alert('Вы выиграли!')">Сыграть</button>
+        </body>
+        </html>
+    """, content_type='text/html')
 
 # Создание веб-приложения для обработки вебхуков
 app = web.Application()
