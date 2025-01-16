@@ -1,18 +1,37 @@
 from flask import Flask, request
 from telegram import Update, Bot, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
+from aiogram import Dispatcher, Bot
+from aiogram.webhook.aiohttp_server import setup_application
+from aiohttp import web
 import random
 import os
 import asyncio
 
+
+
 TOKEN = os.getenv('TOKEN')  # Используем переменные окружения для безопасности
 
 app = Flask(__name__)
-
 # Создаем объект приложения для работы с Telegram API
 application = Application.builder().token(TOKEN).build()
 if not TOKEN:
     raise ValueError("Токен не задан. Проверьте переменную окружения TOKEN.")
+
+async def on_startup(dp: Dispatcher):
+    await bot.set_webhook(f"https://https://bot2-ksjg.onrender.com/webhook")
+
+async def on_shutdown(dp: Dispatcher):
+    await bot.delete_webhook()
+
+app = web.Application()
+dp = Dispatcher()
+bot = Bot(token="7717648561:AAELGQaKsOQNaNDu3u7gOUTX9AvlBYoqPVc")
+
+app.router.add_post("/webhook", dp.webhook_handler)
+
+
+application.run_polling()
 
 async def start(update: Update, context=None):
     keyboard = [
@@ -49,13 +68,7 @@ def webhook():
     application.process_update(update)
     return 'ok', 200
     
-@app.route("/", methods=['GET'])
-def index():
-    return "Сервер работает и принимает запросы."
 
-application.run_polling()
 
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 5000))  # Используем порт из переменной окружения
-    app.run(host="0.0.0.0", port=port)  # Привязываем приложение ко всем интерфейсам
+    web.run_app(app, host="0.0.0.0", port=5000) # Привязываем приложение ко всем интерфейсам
