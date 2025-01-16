@@ -56,8 +56,7 @@ async def on_shutdown(app: web.Application):
     await bot.delete_webhook()
 
 # Маршрут для веб-приложения
-@app.route("/webapp")
-async def webapp_handler(request):
+def webapp_handler(request):
     return web.Response(text="""
         <!DOCTYPE html>
         <html lang="ru">
@@ -74,6 +73,7 @@ async def webapp_handler(request):
 
 # Создание веб-приложения для обработки вебхуков
 app = web.Application()
+app.router.add_get("/webapp", webapp_handler)
 SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
