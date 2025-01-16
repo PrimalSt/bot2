@@ -1,11 +1,11 @@
 import os
 import asyncio
+from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.client.session.aiohttp import AiohttpSession, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
 
 # Получение токена из переменной окружения
@@ -14,12 +14,11 @@ if not TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная BOT_TOKEN установлена.")
 
 # Инициализация бота и диспетчера
-from aiogram import Bot
 bot = Bot(token=TOKEN, session=AiohttpSession(), parse_mode='HTML')
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 # Создание клавиатуры для навигации с веб-приложением
-casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")  # Домен для веб-приложения
+casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
@@ -44,9 +43,9 @@ async def balance_handler(message: Message):
 @dp.message(Command("help"))
 async def help_handler(message: Message):
     await message.answer(
-        "Используйте команды или кнопки для взаимодействия:\n" 
-        "- /start для начала\n" 
-        "- /balance для проверки баланса\n" 
+        "Используйте команды или кнопки для взаимодействия:\n"
+        "- /start для начала\n"
+        "- /balance для проверки баланса\n"
         "- /help для получения справки"
     )
 
@@ -60,29 +59,17 @@ async def on_shutdown(app: web.Application):
     await bot.delete_webhook()
 
 # Маршрут для веб-приложения
-def webapp_handler(request):
-    return web.Response(text="""
-        <!DOCTYPE html>
-        <html lang="ru">
-        <head>
-            <title>Казино Бот</title>
-            <style>body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }</style>
-        </head>
-        <body>
-            <h1>Добро пожаловать в Казино!</h1>
-            <button onclick="alert('Вы выиграли!')">Сыграть</button>
-        </body>
-        </html>
-    """, content_type='text/html')
+async def webapp_handler(request):
+    return web.Response(text="Hello, this is your web app!")
 
-# Создание веб-приложения для обработки вебхуков
+# Настройка приложения aiohttp
 app = web.Application()
-app.router.add_get("/webapp", webapp_handler)
-SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
+app.router.add_get('/webapp', webapp_handler)  # Добавление маршрута для веб-приложения
+
+# Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080))  # Используем порт из переменной окружения Render
-    web.run_app(app, host="0.0.0.0", port=port)
-
+# Запуск приложения
+if __name__ == '__main__':
+    web.run_app(app, host='0.0.0.0', port=int(os.getenv('PORT', 8080)))  # Порт можно задать через переменные окружения или использовать 8080 по умолчанию.
