@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
 
 # Получение токена из переменной окружения
@@ -16,13 +16,12 @@ if not TOKEN:
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
-# Создание клавиатуры для навигации
-navigation_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="Играть"), KeyboardButton(text="Баланс")],
-        [KeyboardButton(text="Пополнить баланс"), KeyboardButton(text="Помощь")]
-    ],
-    resize_keyboard=True
+# Создание клавиатуры для навигации с веб-приложением
+casino_web_app = WebAppInfo(url=f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/templates/index.html")  # Замените путь для вашего HTML
+web_button = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
+    ]
 )
 
 # Обработчик команды /start
@@ -31,7 +30,7 @@ async def start_handler(message: Message):
     await message.answer(
         "Добро пожаловать в Казино Бот! \n\n"
         "Вы можете играть в игры и проверять свой баланс. Используйте кнопки ниже.",
-        reply_markup=navigation_keyboard
+        reply_markup=web_button
     )
 
 # Обработчик команды /balance
