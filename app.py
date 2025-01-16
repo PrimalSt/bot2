@@ -1,5 +1,4 @@
 import os
-import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -12,7 +11,7 @@ TOKEN = os.getenv('BOT_TOKEN')
 if not TOKEN:
     raise ValueError("Токен бота не найден. Убедитесь, что переменная BOT_TOKEN установлена.")
 
-# Инициализация бота и диспетчера без параметров по умолчанию
+# Инициализация бота и диспетчера
 bot = Bot(token=TOKEN, session=AiohttpSession())
 dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
@@ -29,23 +28,8 @@ web_button = InlineKeyboardMarkup(
 async def start_handler(message: types.Message):
     await message.answer(
         "Добро пожаловать в Казино Бот! \n\n"
-        "Вы можете играть в игры и проверять свой баланс. Используйте кнопки ниже.",
+        "Вы можете играть в игры и проверять свой баланс. Используйте кнопку ниже.",
         reply_markup=web_button
-    )
-
-# Обработчик команды /balance
-@dp.message(Command("balance"))
-async def balance_handler(message: types.Message):
-    await message.answer("Ваш текущий баланс: 100 монет")
-
-# Обработчик команды /help
-@dp.message(Command("help"))
-async def help_handler(message: types.Message):
-    await message.answer(
-        "Используйте команды или кнопки для взаимодействия:\n"
-        "- /start для начала\n"
-        "- /balance для проверки баланса\n"
-        "- /help для получения справки"
     )
 
 async def on_startup(app: web.Application):
@@ -53,9 +37,7 @@ async def on_startup(app: web.Application):
     await bot.set_webhook(webhook_url)
 
 async def on_shutdown(app: web.Application):
-    session = await bot.get_session()
-    await session.close()
-    await bot.delete_webhook()
+    await bot.delete_webhook()  # Удаляем вебхук
 
 # Маршрут для веб-приложения
 async def webapp_handler(request):
@@ -72,4 +54,3 @@ app.on_shutdown.append(on_shutdown)
 # Запуск приложения
 if __name__ == '__main__':
     web.run_app(app, host='0.0.0.0', port=int(os.getenv('PORT', 8080)))  # Порт можно задать через переменные окружения или использовать 8080 по умолчанию.
-
