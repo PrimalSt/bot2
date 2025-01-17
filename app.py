@@ -20,12 +20,11 @@ if not TOKEN:
 
 # Initialize bot and dispatcher with error handling
 try:
-    bot = Bot(token=TOKEN, session=AiohttpSession(), parse_mode=ParseMode.HTML)
+    bot = Bot(token=TOKEN, session=AiohttpSession(), default=types.DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(bot=bot, storage=MemoryStorage())
 except Exception as e:
     logger.error(f"Failed to initialize bot: {e}")
     raise
-
 # Создание клавиатуры для навигации с веб-приложением
 casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")
 web_button = InlineKeyboardMarkup(
@@ -48,7 +47,7 @@ async def start_handler(message: types.Message):
         )
     except TelegramAPIError as e:
         logger.error(f"Error in start_handler: {e}")
-        await message.answer("Sorry, an error occurred. Please try again later.")
+        await bot.send_message(chat_id=message.chat.id, text="Sorry, an error occurred. Please try again later.")
 
 # Обработчик для получения обновлений от Telegram
 async def handle_webhook(request):
