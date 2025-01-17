@@ -20,11 +20,12 @@ if not TOKEN:
 
 # Initialize bot and dispatcher with error handling
 try:
-    bot = Bot(token=TOKEN, session=AiohttpSession(), default=types.DefaultBotProperties(parse_mode=ParseMode.HTML))
-    dp = Dispatcher(bot=bot, storage=MemoryStorage())
+      bot = Bot(token=TOKEN, session=AiohttpSession())
+      dp = Dispatcher(bot=bot, storage=MemoryStorage())
 except Exception as e:
-    logger.error(f"Failed to initialize bot: {e}")
-    raise
+      logger.error(f"Failed to initialize bot: {e}")
+      raise
+
 # Создание клавиатуры для навигации с веб-приложением
 casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")
 web_button = InlineKeyboardMarkup(
