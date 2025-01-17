@@ -99,10 +99,6 @@ app.router.add_get("/webapp", webapp_handler)
 
 # Установка обработчиков событий запуска и завершения работы приложения
 
-@app.router.add_get("/")
-async def index_handler(request):
-    return web.Response(text="Server is running.")
-
 app.on_startup.append(on_startup)
 #app.on_shutdown.append(on_shutdown)
 
