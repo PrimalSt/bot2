@@ -68,7 +68,7 @@ async def handle_webhook(request):
 
 async def on_startup(app: web.Application):
     try:
-        webhook_url = "https://bot2-ksjg.onrender.com/7129325002:AAEPe4GSU_Utxu2aXIhXOM2THMAEbmbQeec"
+        webhook_url = "https://bot2-ksjg.onrender.com/webhook"
         await bot.set_webhook(webhook_url)
         logger.info("Webhook set successfully")
     except Exception as e:
