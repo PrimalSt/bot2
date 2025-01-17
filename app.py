@@ -20,7 +20,7 @@ if not TOKEN:
 
 # Initialize bot and dispatcher with error handling
 try:
-      bot = Bot(token=TOKEN, session=AiohttpSession(), default=types.DefaultBotProperties())
+      bot = Bot(token=TOKEN, session=AiohttpSession())
       dp = Dispatcher(bot=bot, storage=MemoryStorage())
 except Exception as e:
       logger.error(f"Failed to initialize bot: {e}")
