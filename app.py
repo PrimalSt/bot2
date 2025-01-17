@@ -6,6 +6,7 @@ from aiohttp import web
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
 from aiogram.exceptions import TelegramAPIError
+from aiogram.client.default import DefaultBotProperties
 import logging
 
 # Configure logging
@@ -19,13 +20,12 @@ if not TOKEN:
 
 # Initialize bot and dispatcher with error handling
 try:
-      bot = Bot(token=TOKEN, session=AiohttpSession())
+      bot = Bot(token=TOKEN, session=AiohttpSession(), default=types.DefaultBotProperties())
       dp = Dispatcher(bot=bot, storage=MemoryStorage())
 except Exception as e:
       logger.error(f"Failed to initialize bot: {e}")
       raise
 
-# Создание клавиатуры для навигации с веб-приложением
 casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com")
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
@@ -35,7 +35,8 @@ web_button = InlineKeyboardMarkup(
 app = web.Application()
 
 # Обработчик команды /start
-@dp.message(Command("start"))
+dp.message(Command("start"))
+
 async def start_handler(message: types.Message):
     try:
         await bot.send_message(
@@ -90,23 +91,27 @@ async def webapp_handler(request):
         return web.Response(status=500, text="Internal server error")
 app.router.add_get("/webapp", webapp_handler)
 
-#async def on_shutdown(app: web.Application):
- #   try:
- #       await bot.delete_webhook()
- #       logger.info("Webhook deleted successfully")
- #   except Exception as e:
- #      logger.error(f"Failed to delete webhook: {e}")
-
+# Обработчик завершения работы приложения
+async def on_shutdown(app: web.Application):
+    await bot.session.close()  # Закрытие сессии напрямую
+    await bot.delete_webhook() 
+    logger.info("Webhook amd Session deleted successfully")
+   
 # Установка обработчиков событий запуска и завершения работы приложения
 
 app.on_startup.append(on_startup)
-#app.on_shutdown.append(on_shutdown)
+app.on_shutdown.append(on_shutdown)
 
 def error_response(message, status):
     return web.json_response({
         "error": message,
         "status": status
     }, status=status)
+
+#try:
+ #   await message.answer("Сообщение")
+#except Exception as e:
+ #   print(f"Ошибка отправки сообщения: {e}")
 
 # Запуск приложения
 if __name__ == '__main__':
