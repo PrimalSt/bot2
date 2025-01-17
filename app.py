@@ -5,7 +5,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
-from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramAPIError
 import logging
 
@@ -27,12 +26,13 @@ except Exception as e:
       raise
 
 # Создание клавиатуры для навигации с веб-приложением
-casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/7129325002:AAEPe4GSU_Utxu2aXIhXOM2THMAEbmbQeec")
+casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com")
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
     ]
 )
+app = web.Application()
 
 # Обработчик команды /start
 @dp.message(Command("start"))
@@ -68,7 +68,7 @@ async def handle_webhook(request):
 
 async def on_startup(app: web.Application):
     try:
-        webhook_url = "https://bot2-ksjg.onrender.com/webhook"
+        webhook_url = "https://bot2-ksjg.onrender.com/7129325002:AAEPe4GSU_Utxu2aXIhXOM2THMAEbmbQeec"
         await bot.set_webhook(webhook_url)
         logger.info("Webhook set successfully")
     except Exception as e:
@@ -83,12 +83,9 @@ async def on_shutdown(app: web.Application):
         logger.error(f"Failed to delete webhook: {e}")
 
 # Setup aiohttp application with middleware
-app = web.Application()
+
 app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
 
-
-
-@app.router.add_get("/webapp")
 async def webapp_handler(request):
     try:
         return web.FileResponse('templates/index.html')
@@ -98,10 +95,17 @@ async def webapp_handler(request):
     except Exception as e:
         logger.error(f"Error serving webapp: {e}")
         return web.Response(status=500, text="Internal server error")
-    
+app.router.add_get("/webapp", webapp_handler)
+
 # Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
+
+def error_response(message, status):
+    return web.json_response({
+        "error": message,
+        "status": status
+    }, status=status)
 
 # Запуск приложения
 if __name__ == '__main__':
@@ -115,3 +119,4 @@ if __name__ == '__main__':
         )
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
+
