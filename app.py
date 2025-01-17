@@ -27,7 +27,7 @@ except Exception as e:
       raise
 
 # Создание клавиатуры для навигации с веб-приложением
-casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")
+casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/7129325002:AAEPe4GSU_Utxu2aXIhXOM2THMAEbmbQeec")
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
@@ -85,6 +85,10 @@ async def on_shutdown(app: web.Application):
 # Setup aiohttp application with middleware
 app = web.Application()
 app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
+
+@app.router.add_get("/webapp")
+async def webapp_handler(request):
+    return web.FileResponse('path/to/your/index.html')
 
 # Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
