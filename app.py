@@ -26,7 +26,7 @@ except Exception as e:
       logger.error(f"Failed to initialize bot: {e}")
       raise
 
-casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com")
+casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
@@ -96,9 +96,19 @@ async def on_shutdown(app: web.Application):
     await bot.session.close()  # Закрытие сессии напрямую
     await bot.delete_webhook() 
     logger.info("Webhook amd Session deleted successfully")
-   
-# Установка обработчиков событий запуска и завершения работы приложения
 
+# Обработчик для корневого маршрута "/"
+##   try:
+  #      return web.FileResponse('templates/index.html')  # Отдаем файл из папки "templates"
+  #  except FileNotFoundError:
+  #      logger.error("Template file not found")
+   #     return web.Response(status=404, text="Template not found")
+  #  except Exception as e:
+   #     logger.error(f"Error serving root handler: {e}")
+   #     return web.Response(status=500, text="Internal server error")
+#app.router.add_get("/", root_handler)
+
+# Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
