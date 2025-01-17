@@ -96,11 +96,6 @@ async def on_startup(app: web.Application):
 async def on_shutdown(app: web.Application):
     try:
         await bot.session.close()  # Закрытие сессии напрямую
-        await bot.delete_webhook() 
-        if not bot.session.closed:
-            await bot.session.close()
-        if hasattr(bot.session, '_connector') and not bot.session._connector.closed:
-            await bot.session._connector.close()
         logger.info("Webhook and Session deleted successfully")
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
@@ -120,6 +115,7 @@ async def root_handler(request):
 app = web.Application()
 app.router.add_get("/", root_handler)  # Add handler for root route
 app.router.add_post('/webhook', handle_webhook)  # Add handler for webhook# Установка обработчиков событий запуска и завершения работы приложения
+
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
