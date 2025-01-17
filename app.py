@@ -26,7 +26,7 @@ except Exception as e:
       logger.error(f"Failed to initialize bot: {e}")
       raise
 
-casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com/webapp")
+casino_web_app = WebAppInfo(url="https://bot2-ksjg.onrender.com")
 web_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="Перейти в Казино", web_app=casino_web_app)]
@@ -52,6 +52,7 @@ async def start_handler(message: types.Message):
         await bot.send_message(chat_id=message.chat.id, text="Sorry, an error occurred. Please try again later.")
 
 # Обработчик для получения обновлений от Telegram
+
 async def handle_webhook(request):
     try:
         json_data = await request.json()
@@ -78,35 +79,38 @@ async def on_startup(app: web.Application):
 
 # Setup aiohttp application with middleware
 
-app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
+#app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
 
-async def webapp_handler(request):
-    try:
-        return web.FileResponse('templates/index.html')
-    except FileNotFoundError:
-        logger.error("Template file not found")
-        return web.Response(status=404, text="Template not found")
-    except Exception as e:
-        logger.error(f"Error serving webapp: {e}")
-        return web.Response(status=500, text="Internal server error")
-app.router.add_get("/webapp", webapp_handler)
+#async def webapp_handler(request):
+   # try:
+      #  return web.FileResponse('templates/index.html')
+  #  except FileNotFoundError:
+  #      logger.error("Template file not found")
+  #      return web.Response(status=404, text="Template not found")
+ #   except Exception as e:
+  #      logger.error(f"Error serving webapp: {e}")
+  #      return web.Response(status=500, text="Internal server error")
+#app.router.add_get("/webapp", webapp_handler)
 
 # Обработчик завершения работы приложения
 async def on_shutdown(app: web.Application):
     await bot.session.close()  # Закрытие сессии напрямую
     await bot.delete_webhook() 
-    logger.info("Webhook amd Session deleted successfully")
+    logger.info("Webhook and Session deleted successfully")
 
 # Обработчик для корневого маршрута "/"
-##   try:
-  #      return web.FileResponse('templates/index.html')  # Отдаем файл из папки "templates"
-  #  except FileNotFoundError:
-  #      logger.error("Template file not found")
-   #     return web.Response(status=404, text="Template not found")
-  #  except Exception as e:
-   #     logger.error(f"Error serving root handler: {e}")
-   #     return web.Response(status=500, text="Internal server error")
-#app.router.add_get("/", root_handler)
+async def root_handler(request):
+    try:
+        return web.FileResponse('templates/index.html')  # Отдаем файл из папки "templates"
+    except FileNotFoundError:
+        logger.error("Template file not found")
+        return web.Response(status=404, text="Template not found")
+    except Exception as e:
+        logger.error(f"Error serving root handler: {e}")
+        return web.Response(status=500, text="Internal server error")
+
+# Добавляем обработчик для маршрута "/"
+app.router.add_get("/", root_handler)
 
 # Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
