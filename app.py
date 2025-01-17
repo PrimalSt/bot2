@@ -75,13 +75,6 @@ async def on_startup(app: web.Application):
         logger.error(f"Failed to set webhook: {e}")
         raise
 
-async def on_shutdown(app: web.Application):
-    try:
-        await bot.delete_webhook()
-        logger.info("Webhook deleted successfully")
-    except Exception as e:
-        logger.error(f"Failed to delete webhook: {e}")
-
 # Setup aiohttp application with middleware
 
 app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
@@ -97,9 +90,21 @@ async def webapp_handler(request):
         return web.Response(status=500, text="Internal server error")
 app.router.add_get("/webapp", webapp_handler)
 
+#async def on_shutdown(app: web.Application):
+ #   try:
+ #       await bot.delete_webhook()
+ #       logger.info("Webhook deleted successfully")
+ #   except Exception as e:
+ #      logger.error(f"Failed to delete webhook: {e}")
+
 # Установка обработчиков событий запуска и завершения работы приложения
+
+@app.router.add_get("/")
+async def index_handler(request):
+    return web.Response(text="Server is running.")
+
 app.on_startup.append(on_startup)
-app.on_shutdown.append(on_shutdown)
+#app.on_shutdown.append(on_shutdown)
 
 def error_response(message, status):
     return web.json_response({
@@ -119,4 +124,3 @@ if __name__ == '__main__':
         )
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
-
