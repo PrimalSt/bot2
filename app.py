@@ -96,6 +96,7 @@ async def on_startup(app: web.Application):
 async def on_shutdown(app: web.Application):
     try:
         await bot.session.close()  # Закрытие сессии напрямую
+        await bot.delete_webhook() 
         logger.info("Webhook and Session deleted successfully")
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
