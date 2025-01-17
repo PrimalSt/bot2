@@ -86,10 +86,19 @@ async def on_shutdown(app: web.Application):
 app = web.Application()
 app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
 
+
+
 @app.router.add_get("/webapp")
 async def webapp_handler(request):
-    return web.FileResponse('path/to/your/index.html')
-
+    try:
+        return web.FileResponse('templates/index.html')
+    except FileNotFoundError:
+        logger.error("Template file not found")
+        return web.Response(status=404, text="Template not found")
+    except Exception as e:
+        logger.error(f"Error serving webapp: {e}")
+        return web.Response(status=500, text="Internal server error")
+    
 # Установка обработчиков событий запуска и завершения работы приложения
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
