@@ -8,6 +8,82 @@ from aiogram.filters import Command
 from aiogram.exceptions import TelegramAPIError
 from aiogram.client.default import DefaultBotProperties
 import logging
+import sqlite3
+
+# Инициализация базы данных
+def init_db():
+    conn = sqlite3.connect("casino_bot.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            telegram_id TEXT UNIQUE,
+            username TEXT,
+            balance INTEGER DEFAULT 1000
+        )
+        ''')
+
+        # Создание таблицы игр
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS games (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            game_name TEXT,
+            bet_amount INTEGER,
+            win_amount INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+        ''')
+        conn.commit()
+        conn.close()
+        print("Таблица успешно создана!")
+    except sqlite3.Error as e:
+        print(f"Ошибка при создании таблицы: {e}")
+print("script started")
+# Добавление пользователя
+def add_user(telegram_id, username):
+    conn = sqlite3.connect("casino_bot.db")
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+        INSERT INTO users (telegram_id, username) VALUES (?, ?)
+        ''', (telegram_id, username))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        print("Пользователь с таким Telegram ID уже существует.")
+    finally:
+        conn.close()
+
+# Получение баланса
+def get_balance(telegram_id):
+    conn = sqlite3.connect("casino_bot.db")
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    SELECT balance FROM users WHERE telegram_id = ?
+    ''', (telegram_id,))
+    result = cursor.fetchone()
+
+    conn.close()
+    return result[0] if result else None
+
+# Обновление баланса
+def update_balance(telegram_id, amount):
+    conn = sqlite3.connect("casino_bot.db")
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    UPDATE users SET balance = balance + ? WHERE telegram_id = ?
+    ''', (amount, telegram_id))
+    conn.commit()
+    conn.close()
+
+if __name__ == "__main__":
+    init_db()
+    print("bd created")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
