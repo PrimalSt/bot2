@@ -11,6 +11,7 @@ import logging
 import sqlite3
 from database import init_db, add_user, get_balance, update_balance
 import random
+from aiogram.types import Update
 init_db()
 
 # Путь к базе данных
@@ -78,22 +79,25 @@ async def add_balance_handler(message: types.Message):
         chat_id=message.chat.id,
         text=f"Ваш баланс пополнен. Новый баланс: {new_balance}"
     )
+
+# Setting up aiohttp application
+app = web.Application()
+
 # Обработчик для получения обновлений от Telegram
 
 async def handle_webhook(request):
     try:
         json_data = await request.json()
-        update = types.Update(**json_data)
-
-        if update.message and update.message.text:
-            message = update.message
-            if message.text == "/start":
-                await start_handler(message)
-        
+        update = Update(**json_data)
+        await dp.process_update(update)
         return web.Response(status=200)
     except Exception as e:
         logger.error(f"Error in webhook handler: {e}")
         return web.Response(status=500)
+
+# Регистрация маршрута вебхука
+
+app.router.add_post("/webhook", handle_webhook)
 
 # Обработчик запуска приложения
 async def on_startup(app: web.Application):
@@ -125,9 +129,7 @@ async def root_handler(request):
         logger.error(f"Error serving root handler: {e}")
         return web.Response(status=500, text="Internal server error")
 
-# Setting up aiohttp application
-app = web.Application()
-app.router.add_get("/", root_handler)
+
 
 
 
@@ -193,7 +195,7 @@ async def play_slots_handler(request):
     return web.json_response({"slots": slots, "win_amount": win_amount})
 
 app.router.add_post("/api/slots", play_slots_handler)
-
+app.router.add_get("/", root_handler)
 # Запуск приложения
 if __name__ == '__main__':
     try:
