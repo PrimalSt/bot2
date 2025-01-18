@@ -87,9 +87,12 @@ app = web.Application()
 
 async def handle_webhook(request):
     try:
+        # Получаем JSON-данные из запроса
         json_data = await request.json()
         update = Update(**json_data)
-        await dp.process_update(update)
+
+        # Передаём обновление в диспетчер
+        await dp.feed_update(update)
         return web.Response(status=200)
     except Exception as e:
         logger.error(f"Error in webhook handler: {e}")
