@@ -12,6 +12,7 @@ import sqlite3
 from database import init_db, add_user, get_balance, update_balance
 import random
 from aiogram.types import Update
+
 init_db()
 
 # Путь к базе данных
