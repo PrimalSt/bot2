@@ -10,10 +10,8 @@ from aiogram.client.default import DefaultBotProperties
 import logging
 import sqlite3
 from database import init_db, add_user, get_balance, update_balance
-from flask import Flask, render_template, request, jsonify
 import random
 init_db()
-app = Flask(__name__)
 
 # Путь к базе данных
 DB_PATH = "casino_bot.db"
