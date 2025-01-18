@@ -97,22 +97,6 @@ async def handle_webhook(request):
         logger.error(f"Error in webhook handler: {e}")
         return web.Response(status=500)
 
-
-# Setup aiohttp application with middleware
-
-#app.router.add_post('/webhook', handle_webhook)  # Добавление маршрута для обработки вебхука
-
-#async def webapp_handler(request):
-   # try:
-      #  return web.FileResponse('templates/index.html')
-  #  except FileNotFoundError:
-  #      logger.error("Template file not found")
-  #      return web.Response(status=404, text="Template not found")
- #   except Exception as e:
-  #      logger.error(f"Error serving webapp: {e}")
-  #      return web.Response(status=500, text="Internal server error")
-#app.router.add_get("/webapp", webapp_handler)
-
 # Обработчик запуска приложения
 async def on_startup(app: web.Application):
     try:
@@ -145,43 +129,39 @@ async def root_handler(request):
 
 # Setting up aiohttp application
 app = web.Application()
-app.router.add_get("/", root_handler)  # Add handler for root route
-app.router.add_post('/webhook', handle_webhook)  # Add handler for webhook# Установка обработчиков событий запуска и завершения работы приложения
+app.router.add_get("/", root_handler)
+
+
 
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
-def error_response(message, status):
-    return web.json_response({
-        "error": message,
-        "status": status
-    }, status=status)
-
-#try:
- #   await message.answer("Сообщение")
-#except Exception as e:
- #   print(f"Ошибка отправки сообщения: {e}")
-
 # API: Получение баланса
-@app.route("/api/balance", methods=["GET"])
-def get_balance():
-    telegram_id = request.args.get("telegram_id")
+async def get_balance_handler(request):
+    telegram_id = request.query.get("telegram_id")
+    if not telegram_id:
+        return web.json_response({"error": "telegram_id is required"}, status=400)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
     cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
     result = cursor.fetchone()
     conn.close()
 
     if result:
-        return jsonify({"balance": result[0]})
-    return jsonify({"error": "User not found"}), 404
+        return web.json_response({"balance": result[0]})
+    return web.json_response({"error": "User not found"}, status=404)
+
+app.router.add_get("/api/balance", get_balance_handler)
+
 # API: Игра в слоты
-@app.route("/api/slots", methods=["POST"])
-def play_slots():
-    data = request.json
+async def play_slots_handler(request):
+    data = await request.json()
     telegram_id = data.get("telegram_id")
     bet = data.get("bet")
+
+    if not telegram_id or not bet:
+        return web.json_response({"error": "telegram_id and bet are required"}, status=400)
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -191,7 +171,7 @@ def play_slots():
     result = cursor.fetchone()
     if not result or result[0] < bet:
         conn.close()
-        return jsonify({"error": "Insufficient balance"}), 400
+        return web.json_response({"error": "Insufficient balance"}, status=400)
 
     # Снимаем ставку
     cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (bet, telegram_id))
@@ -212,7 +192,9 @@ def play_slots():
     conn.commit()
     conn.close()
 
-    return jsonify({"slots": slots, "win_amount": win_amount})
+    return web.json_response({"slots": slots, "win_amount": win_amount})
+
+app.router.add_post("/api/slots", play_slots_handler)
 
 # Запуск приложения
 if __name__ == '__main__':
