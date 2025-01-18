@@ -1,14 +1,21 @@
 <!DOCTYPE html>
-<html lang="ru">
-<meta charset="UTF-8">
+<html lang="en">
 
 <head>
-  <title>Казино Бот</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Казино</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 
 <body>
-  <h1>Добро пожаловать в Казино!</h1>
-  <button onclick="alert('Вы выиграли!')">Сыграть</button>
+  <div id="app">
+    <h1>🎰 Казино</h1>
+    <p id="balance">Баланс: ...</p>
+    <button onclick="playSlots()">Играть в слоты</button>
+    <p id="result"></p>
+  </div>
+  <script src="/static/js/app.js"></script>
 </body>
 
 </html>

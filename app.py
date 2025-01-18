@@ -9,82 +9,14 @@ from aiogram.exceptions import TelegramAPIError
 from aiogram.client.default import DefaultBotProperties
 import logging
 import sqlite3
+from database import init_db, add_user, get_balance, update_balance
+from flask import Flask, render_template, request, jsonify
+import random
+init_db()
+app = Flask(__name__)
 
-# Инициализация базы данных
-def init_db():
-    conn = sqlite3.connect("casino_bot.db")
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            telegram_id TEXT UNIQUE,
-            username TEXT,
-            balance INTEGER DEFAULT 1000
-        )
-        ''')
-
-        # Создание таблицы игр
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS games (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            game_name TEXT,
-            bet_amount INTEGER,
-            win_amount INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        ''')
-        conn.commit()
-        conn.close()
-        print("Таблица успешно создана!")
-    except sqlite3.Error as e:
-        print(f"Ошибка при создании таблицы: {e}")
-print("script started")
-# Добавление пользователя
-def add_user(telegram_id, username):
-    conn = sqlite3.connect("casino_bot.db")
-    cursor = conn.cursor()
-    
-    try:
-        cursor.execute('''
-        INSERT INTO users (telegram_id, username) VALUES (?, ?)
-        ''', (telegram_id, username))
-        conn.commit()
-    except sqlite3.IntegrityError:
-        print("Пользователь с таким Telegram ID уже существует.")
-    finally:
-        conn.close()
-
-# Получение баланса
-def get_balance(telegram_id):
-    conn = sqlite3.connect("casino_bot.db")
-    cursor = conn.cursor()
-
-    cursor.execute('''
-    SELECT balance FROM users WHERE telegram_id = ?
-    ''', (telegram_id,))
-    result = cursor.fetchone()
-
-    conn.close()
-    return result[0] if result else None
-
-# Обновление баланса
-def update_balance(telegram_id, amount):
-    conn = sqlite3.connect("casino_bot.db")
-    cursor = conn.cursor()
-
-    cursor.execute('''
-    UPDATE users SET balance = balance + ? WHERE telegram_id = ?
-    ''', (amount, telegram_id))
-    conn.commit()
-    conn.close()
-
-if __name__ == "__main__":
-    init_db()
-    print("bd created")
-
+# Путь к базе данных
+DB_PATH = "casino_bot.db"
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -112,12 +44,13 @@ web_button = InlineKeyboardMarkup(
 # Обработчик команды /start
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
+    add_user(telegram_id=message.from_user.id, username=message.from_user.username)
     try:
         await bot.send_message(
             chat_id=message.chat.id,
             text=(
                 "Welcome to Casino Bot! 🎰\n\n"
-                "You can play games and check your balance. Use the button below."
+                "Ваш стартовый баланс: 1000."
             ),
             reply_markup=web_button
         )
@@ -125,6 +58,28 @@ async def start_handler(message: types.Message):
         logger.error(f"Error in start_handler: {e}")
         await bot.send_message(chat_id=message.chat.id, text="Sorry, an error occurred. Please try again later.")
 
+@dp.message(Command("balance"))
+async def balance_handler(message: types.Message):
+    balance = get_balance(telegram_id=message.from_user.id)
+    if balance is not None:
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text=f"Ваш текущий баланс: {balance}"
+        )
+    else:
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text="Вы не зарегистрированы. Используйте /start для регистрации."
+        )
+ 
+@dp.message(Command("add_balance"))
+async def add_balance_handler(message: types.Message):
+    update_balance(telegram_id=message.from_user.id, amount=500)
+    new_balance = get_balance(telegram_id=message.from_user.id)
+    await bot.send_message(
+        chat_id=message.chat.id,
+        text=f"Ваш баланс пополнен. Новый баланс: {new_balance}"
+    )
 # Обработчик для получения обновлений от Telegram
 
 async def handle_webhook(request):
@@ -206,6 +161,63 @@ def error_response(message, status):
  #   await message.answer("Сообщение")
 #except Exception as e:
  #   print(f"Ошибка отправки сообщения: {e}")
+ 
+# Главная страница приложения
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+# API: Получение баланса
+@app.route("/api/balance", methods=["GET"])
+def get_balance():
+    telegram_id = request.args.get("telegram_id")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        return jsonify({"balance": result[0]})
+    return jsonify({"error": "User not found"}), 404
+# API: Игра в слоты
+@app.route("/api/slots", methods=["POST"])
+def play_slots():
+    data = request.json
+    telegram_id = data.get("telegram_id")
+    bet = data.get("bet")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Проверяем баланс
+    cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+    result = cursor.fetchone()
+    if not result or result[0] < bet:
+        conn.close()
+        return jsonify({"error": "Insufficient balance"}), 400
+
+    # Снимаем ставку
+    cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (bet, telegram_id))
+
+    # Генерация слотов
+    SYMBOLS = ["🍒", "🍋", "🍊", "🍇", "⭐"]
+    slots = [random.choice(SYMBOLS) for _ in range(3)]
+    win_amount = 0
+
+    # Логика выигрыша
+    if slots[0] == slots[1] == slots[2]:  # Все три совпадают
+        win_amount = bet * 10
+    elif slots[0] == slots[1] or slots[1] == slots[2] or slots[0] == slots[2]:  # Два совпадают
+        win_amount = bet
+
+    # Обновляем баланс
+    cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"slots": slots, "win_amount": win_amount})
 
 # Запуск приложения
 if __name__ == '__main__':
