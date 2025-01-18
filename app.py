@@ -161,11 +161,6 @@ def error_response(message, status):
  #   await message.answer("Сообщение")
 #except Exception as e:
  #   print(f"Ошибка отправки сообщения: {e}")
- 
-# Главная страница приложения
-@app.route("/")
-def index():
-    return render_template("index.html")
 
 # API: Получение баланса
 @app.route("/api/balance", methods=["GET"])
