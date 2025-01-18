@@ -1,3 +1,12 @@
+// Проверяем, доступен ли Telegram.WebApp
+if (typeof Telegram !== "undefined" && Telegram.WebApp.initDataUnsafe) {
+  const telegram_id = Telegram.WebApp.initDataUnsafe.user?.id;
+  const username = Telegram.WebApp.initDataUnsafe.user?.username || "Unknown";
+  console.log("Telegram ID:", telegram_id);
+} else {
+  alert("Telegram Web App API недоступен. Запустите приложение через Telegram.");
+}
+
 // Инициализация Telegram Web App
 Telegram.WebApp.ready();
 
@@ -28,12 +37,13 @@ function updateBalance() {
 
 // Функция для игры в слоты
 function playSlots() {
-  const bet = 100; // Фиксированная ставка
+  const telegram_id = Telegram.WebApp.initDataUnsafe.user?.id; // Получаем Telegram ID
+  const bet = 100; // Ставка
 
   fetch("/api/slots", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ telegram_id, bet }) // Передаем telegram_id
+    body: JSON.stringify({ telegram_id, bet })
   })
     .then(response => response.json())
     .then(data => {
@@ -52,6 +62,8 @@ function playSlots() {
       alert("Ошибка игры.");
     });
 }
+
+document.querySelector("button").addEventListener("click", playSlots);
 
 // Автоматически обновляем баланс при загрузке страницы
 updateBalance();
