@@ -92,7 +92,7 @@ async def handle_webhook(request):
         update = Update(**json_data)
 
         # Передаём обновление в диспетчер
-        await dp.feed_update(update)
+        await dp.feed_update(bot=bot, update=update)
         return web.Response(status=200)
     except Exception as e:
         logger.error(f"Error in webhook handler: {e}")
@@ -138,6 +138,7 @@ async def root_handler(request):
 
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
+app.router.add_static("/static/", path="static", name="static")
 
 # API: Получение баланса
 async def get_balance_handler(request):
