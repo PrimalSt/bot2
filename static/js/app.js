@@ -9,11 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("slot3")
   ];
   const resultText = document.getElementById("result");
+  let isSpinning = false;
   if (!slotsButton) {
     console.error("Элемент с ID 'slots' не найден в DOM.");
   } else {
     console.log("Элемент с ID 'slots' найден.");
   }
+
 
   if (typeof Telegram !== "undefined" && Telegram.WebApp) {
     const tg = Telegram.WebApp;
@@ -46,6 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("slots").addEventListener("click", async () => {
+    if (isSpinning) {
+      alert("Игра уже началась! Дождитесь окончания текущей игры.");
+      return;
+    }
+
     const betInput = document.getElementById("bet-amount");
     const bet = parseInt(betInput.value);
     const balanceElement = document.getElementById("balance");
@@ -60,6 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Пожалуйста, введите корректную ставку.");
       return;
     }
+    isSpinning = true;
+    slotsButton.disabled = true;
 
     // Запуск анимации крутки слотов
     slotElements.forEach(slot => {
@@ -74,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchBalance(telegramId).then((balance) => {
           document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
         });
-      }, 3000);
+      }, 2200);
       // Останавливаем анимацию слотов и показываем результат
       result.slots.forEach((symbol, index) => {
         setTimeout(() => {
@@ -99,7 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
           : "Увы, вы ничего не выиграли. Попробуйте снова!";
         resultText.style.color = result.win_amount > 0 ? "green" : "red";
-      }, 2500);
+        isSpinning = false;
+        slotsButton.disabled = false;
+      }, 2200);
     } catch (error) {
       console.error("Ошибка в игре слоты:", error);
       alert("Произошла ошибка при запуске игры. Попробуйте позже.");
