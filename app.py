@@ -160,44 +160,47 @@ async def get_balance_handler(request):
 app.router.add_get("/api/balance", get_balance_handler)
 
 # API: Игра в слоты
-async def play_slots_handler(request):
-    data = await request.json()
-    telegram_id = data.get("telegram_id")
-    bet = data.get("bet")
+@web.post("/api/slots")
+async def slots(request):
+    try:
+        data = await request.json()
+        telegram_id = data.get("telegram_id")
+        bet = data.get("bet")
 
-    if not telegram_id or not bet:
-        return web.json_response({"error": "telegram_id and bet are required"}, status=400)
+        if not telegram_id or not bet:
+            return web.json_response({"error": "telegram_id and bet are required"}, status=400)
 
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
-    # Проверяем баланс
-    cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
-    result = cursor.fetchone()
-    if not result or result[0] < bet:
+        # Проверяем баланс
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        result = cursor.fetchone()
+        if not result or result[0] < bet:
+            conn.close()
+            return web.json_response({"error": "Insufficient balance"}, status=400)
+
+        # Снимаем ставку
+        cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (bet, telegram_id))
+
+        # Генерация слотов
+        SYMBOLS = ["🍒", "🍋", "🍊", "🍇", "⭐"]
+        slots = [random.choice(SYMBOLS) for _ in range(3)]
+        win_amount = 0
+
+        # Логика выигрыша
+        if slots[0] == slots[1] == slots[2]:  # Все три совпадают
+            win_amount = bet * 10
+        elif slots[0] == slots[1] or slots[1] == slots[2] or slots[0] == slots[2]:  # Два совпадают
+            win_amount = bet
+
+        # Обновляем баланс
+        cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
+        conn.commit()
         conn.close()
-        return web.json_response({"error": "Insufficient balance"}, status=400)
-
-    # Снимаем ставку
-    cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (bet, telegram_id))
-
-    # Генерация слотов
-    SYMBOLS = ["🍒", "🍋", "🍊", "🍇", "⭐"]
-    slots = [random.choice(SYMBOLS) for _ in range(3)]
-    win_amount = 0
-
-    # Логика выигрыша
-    if slots[0] == slots[1] == slots[2]:  # Все три совпадают
-        win_amount = bet * 10
-    elif slots[0] == slots[1] or slots[1] == slots[2] or slots[0] == slots[2]:  # Два совпадают
-        win_amount = bet
-
-    # Обновляем баланс
-    cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
-    conn.commit()
-    conn.close()
-
-    return web.json_response({"slots": slots, "win_amount": win_amount})
+        return web.json_response({"slots": result, "win_amount": win_amount})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 @web.middleware
 async def cors_middleware(request, handler):
@@ -209,8 +212,8 @@ async def cors_middleware(request, handler):
 
 app.middlewares.append(cors_middleware)
 
-app.router.add_post("/api/slots", play_slots_handler)
-app.router.add_get("/api/slots", play_slots_handler)
+app.router.add_post("/api/slots", slots)
+app.router.add_get("/api/slots", slots)
 app.router.add_get("/", root_handler)
 # Запуск приложения
 if __name__ == '__main__':

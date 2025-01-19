@@ -2,6 +2,12 @@
 // Инициализация Telegram Web App
 //Telegram.WebApp.ready();
 
+if (!telegramId || !bet) {
+  console.error("telegram_id и bet обязательны для запроса");
+  alert("Ошибка: telegram_id и ставка обязательны для игры в слоты");
+  return;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Проверяем, доступен ли Telegram Web App API
   if (typeof Telegram !== "undefined" && Telegram.WebApp) {
@@ -80,7 +86,10 @@ async function playSlots(telegramId) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ telegram_id: telegramId }),
+      body: JSON.stringify({
+        telegram_id: telegramId, // Передаем telegram_id
+        bet: bet, // Передаем ставку
+      }),
     });
     const data = await response.json();
     if (!response.ok) {
@@ -96,4 +105,3 @@ async function playSlots(telegramId) {
 document.querySelector("button").addEventListener("click", playSlots);
 
 // Автоматически обновляем баланс при загрузке страницы
-updateBalance();
