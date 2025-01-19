@@ -199,7 +199,18 @@ async def play_slots_handler(request):
 
     return web.json_response({"slots": slots, "win_amount": win_amount})
 
+@web.middleware
+async def cors_middleware(request, handler):
+    response = await handler(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+app.middlewares.append(cors_middleware)
+
 app.router.add_post("/api/slots", play_slots_handler)
+app.router.add_get("/api/slots", play_slots_handler)
 app.router.add_get("/", root_handler)
 # Запуск приложения
 if __name__ == '__main__':
