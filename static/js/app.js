@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     slotElements.forEach(slot => {
       slot.classList.add("spinning");
       slot.classList.remove("winning", "losing");
-      slot.textContent = "🍒"; // Устанавливаем дефолтный символ
+      // slot.textContent = "🍒"; // Устанавливаем дефолтный символ
     });
 
     try {
