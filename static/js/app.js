@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchBalance(telegramId).then((balance) => {
           document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
         });
-      }, 30000);
+      }, 3000);
 
     } else {
       alert("Ошибка: не удалось получить данные пользователя. Убедитесь, что приложение открыто через Telegram.");
