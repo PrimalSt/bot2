@@ -161,8 +161,9 @@ app.router.add_get("/api/balance", get_balance_handler)
 
 # API: Игра в слоты
 @web.post("/api/slots")
-async def slots(request):
+async def slots_handler(request):
     try:
+        # Получение данных запроса
         data = await request.json()
         telegram_id = data.get("telegram_id")
         bet = data.get("bet")
@@ -170,13 +171,19 @@ async def slots(request):
         if not telegram_id or not bet:
             return web.json_response({"error": "telegram_id and bet are required"}, status=400)
 
+        # Подключение к базе данных
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Проверяем баланс
+        # Проверяем баланс пользователя
         cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
         result = cursor.fetchone()
-        if not result or result[0] < bet:
+        if not result:
+            conn.close()
+            return web.json_response({"error": "User not found"}, status=404)
+
+        balance = result[0]
+        if balance < bet:
             conn.close()
             return web.json_response({"error": "Insufficient balance"}, status=400)
 
@@ -198,7 +205,12 @@ async def slots(request):
         cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
         conn.commit()
         conn.close()
-        return web.json_response({"slots": result, "win_amount": win_amount})
+
+        return web.json_response({"slots": slots, "win_amount": win_amount})
+
+    except sqlite3.Error as e:
+        return web.json_response({"error": f"Database error: {str(e)}"}, status=500)
+
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
@@ -212,8 +224,8 @@ async def cors_middleware(request, handler):
 
 app.middlewares.append(cors_middleware)
 
-app.router.add_post("/api/slots", slots)
-app.router.add_get("/api/slots", slots)
+app.router.add_post("/api/slots", slots_handler)
+app.router.add_get("/api/slots", slots_handler)
 app.router.add_get("/", root_handler)
 # Запуск приложения
 if __name__ == '__main__':
