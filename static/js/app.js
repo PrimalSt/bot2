@@ -31,12 +31,12 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
       });
 
-      // Автоматическое обновление баланса каждые 30 секунд
+      // Автоматическое обновление баланса каждые 10 секунд
       setInterval(() => {
         fetchBalance(telegramId).then((balance) => {
           document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
         });
-      }, 3000);
+      }, 10000);
 
     } else {
       alert("Ошибка: не удалось получить данные пользователя. Убедитесь, что приложение открыто через Telegram.");
@@ -64,30 +64,35 @@ document.addEventListener("DOMContentLoaded", () => {
     // Запуск анимации крутки слотов
     slotElements.forEach(slot => {
       slot.classList.add("spinning");
+      slot.classList.remove("winning", "losing");
       slot.textContent = "🍒"; // Устанавливаем дефолтный символ
     });
 
     try {
       const result = await playSlots(telegramId, bet);
-      document.getElementById("balance").innerText = `Ваш баланс: ${result.new_balance} монет`;
+      balanceElement.innerText = `Ваш новый баланс: ${result.new_balance} монет`;
       // Останавливаем анимацию слотов и показываем результат
       result.slots.forEach((symbol, index) => {
         setTimeout(() => {
-          slotElements[index].classList.remove("spinning");
-          slotElements[index].textContent = symbol;
+          const slot = slotElements[index];
+          slot.classList.remove("spinning");
+          slot.textContent = symbol;
+
+          // Добавление эффекта выигрыша/проигрыша
+          if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
+            slot.classList.add("winning");
+          } else {
+            slot.classList.add("losing");
+          }
         }, index * 1000); // Останавливаем каждый слот с задержкой
       });
 
       // Показ сообщения о выигрыше
       setTimeout(() => {
-        const resultElement = document.getElementById("game-result");
-        resultElement.style.display = "block";
-        resultElement.textContent = result.message;
-
-        setTimeout(() => {
-          resultElement.style.display = "none";
-          resultElement.textContent = "";
-        }, 3000);
+        resultText.textContent = result.win_amount > 0
+          ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
+          : "Увы, вы ничего не выиграли. Попробуйте снова!";
+        resultText.style.color = result.win_amount > 0 ? "green" : "red";
       }, 3000);
     } catch (error) {
       console.error("Ошибка в игре слоты:", error);
