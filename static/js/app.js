@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("slot2"),
     document.getElementById("slot3")
   ];
-
+  const resultText = document.getElementById("result");
   if (!slotsButton) {
     console.error("Элемент с ID 'slots' не найден в DOM.");
   } else {
