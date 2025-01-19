@@ -69,8 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const result = await playSlots(telegramId, bet);
-      balanceElement.innerText = `Ваш новый баланс: ${result.new_balance} монет`;
-
+      document.getElementById("balance").innerText = `Ваш баланс: ${result.new_balance} монет`;
       // Останавливаем анимацию слотов и показываем результат
       result.slots.forEach((symbol, index) => {
         setTimeout(() => {
@@ -81,16 +80,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Показ сообщения о выигрыше
       setTimeout(() => {
-        const resultElement = document.createElement("div");
-        resultElement.className = "game-result";
+        const resultElement = document.getElementById("game-result");
+        resultElement.style.display = "block";
         resultElement.textContent = result.message;
-        document.body.appendChild(resultElement);
 
         setTimeout(() => {
-          resultElement.remove();
+          resultElement.style.display = "none";
+          resultElement.textContent = "";
         }, 3000);
       }, 3000);
-
     } catch (error) {
       console.error("Ошибка в игре слоты:", error);
       alert("Произошла ошибка при запуске игры. Попробуйте позже.");
