@@ -95,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Добавление эффекта выигрыша/проигрыша
         if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
           setTimeout(() => {
+            const slot = slotElements[index]
             slot.classList.add("winning");
           }, 2200);
         } else {

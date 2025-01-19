@@ -14,6 +14,7 @@ def init_db():
         telegram_id TEXT UNIQUE,
         username TEXT,
         balance INTEGER DEFAULT 1000
+        last_bonus TEXT DEFAULT NULL
     )
     ''')
 
