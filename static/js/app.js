@@ -90,16 +90,16 @@ document.addEventListener("DOMContentLoaded", () => {
           const slot = slotElements[index];
           slot.classList.remove("spinning");
           slot.textContent = symbol;
-
-          // Добавление эффекта выигрыша/проигрыша
-          if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
-            setTimeout(() => {
-              slot.classList.add("winning");
-            }, 2500);
-          } else {
-            slot.classList.add("losing");
-          }
         }, index * 1000); // Останавливаем каждый слот с задержкой
+
+        // Добавление эффекта выигрыша/проигрыша
+        if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
+          setTimeout(() => {
+            slot.classList.add("winning");
+          }, 2200);
+        } else {
+          slot.classList.add("losing");
+        }
       });
 
       // Показ сообщения о выигрыше
@@ -170,4 +170,51 @@ async function playSlots(telegramId, bet) {
     throw error;
   }
 }
-// Автоматически обновляем баланс при загрузке страницы
+
+document.getElementById("daily-bonus").addEventListener("click", async () => {
+  const telegramId = Telegram.WebApp.initDataUnsafe.user.id;
+  const bonusMessage = document.getElementById("bonus-message");
+
+  try {
+    const response = await fetch("/api/daily_bonus", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ telegram_id: telegramId }),
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Не удалось получить бонус.");
+    }
+
+    bonusMessage.textContent = "Ежедневный бонус успешно зачислен!";
+    bonusMessage.style.color = "green";
+    fetchBalance(telegramId).then((balance) => {
+      document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
+    })
+  } catch (error) {
+    bonusMessage.textContent = error.message;
+    bonusMessage.style.color = "red";
+  }
+});
+
+async function fetchLeaderboard() {
+  try {
+    const response = await fetch("/api/leaderboard");
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Не удалось загрузить таблицу лидеров.");
+    }
+
+    const leaderboardElement = document.getElementById("leaderboard");
+    leaderboardElement.innerHTML = result.leaderboard
+      .map((player) => `<li>${player[0]}: ${player[1]} монет</li>`)
+      .join("");
+  } catch (error) {
+    console.error("Ошибка при загрузке таблицы лидеров:", error);
+  }
+}
+
+// Загружаем таблицу лидеров при старте
+document.addEventListener("DOMContentLoaded", fetchLeaderboard);

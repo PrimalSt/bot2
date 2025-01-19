@@ -12,6 +12,7 @@ import sqlite3
 from database import init_db, add_user, get_balance, update_balance
 import random
 from aiogram.types import Update
+from datetime import datetime
 
 init_db()
 
@@ -132,13 +133,66 @@ async def root_handler(request):
         logger.error(f"Error serving root handler: {e}")
         return web.Response(status=500, text="Internal server error")
 
-
-
-
-
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 app.router.add_static("/static/", path="static", name="static")
+
+async def daily_bonus_handler(request):
+    try:
+        data = await request.json()
+        telegram_id = data.get("telegram_id")
+
+        if not telegram_id:
+            return web.json_response({"error": "telegram_id is required"}, status=400)
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Проверяем последнюю выдачу бонуса
+        cursor.execute("SELECT last_bonus FROM users WHERE telegram_id = ?", (telegram_id,))
+        result = cursor.fetchone()
+        if not result:
+            conn.close()
+            return web.json_response({"error": "User not found"}, status=404)
+
+        last_bonus = result[0]
+        today = datetime.date.today()
+       
+        if last_bonus == str(today):
+            conn.close()
+            return web.json_response({"error": "Bonus already claimed today"}, status=400)
+
+        # Обновляем баланс и дату бонуса
+        cursor.execute("UPDATE users SET balance = balance + 100, last_bonus = ? WHERE telegram_id = ?", (today, telegram_id))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        new_balance = cursor.fetchone()[0]
+
+        conn.commit()
+        conn.close()
+
+        return web.json_response({"new_balance": new_balance})
+
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+app.router.add_post("/api/daily_bonus", daily_bonus_handler) 
+
+async def leaderboard_handler(request):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Получаем топ-10 игроков по балансу
+        cursor.execute("SELECT username, balance FROM users ORDER BY balance DESC LIMIT 10")
+        leaderboard = cursor.fetchall()
+        conn.close()
+
+        return web.json_response({"leaderboard": leaderboard})
+
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+    
+app.router.add_get("/api/leaderboard", leaderboard_handler)
 
 # API: Получение баланса
 async def get_balance_handler(request):
@@ -213,8 +267,10 @@ async def slots(request):
         # Логика выигрыша
         if slots[0] == slots[1] == slots[2]:  # Все три совпадают
             win_amount = bet * 10
+        elif slots.count("⭐") == 3:  # Все три символа - звёзды
+            win_amount = bet * 20
         elif slots[0] == slots[1] or slots[1] == slots[2] or slots[0] == slots[2]:  # Два совпадают
-            win_amount = bet
+            win_amount = bet * 2
 
         # Обновляем баланс
         cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
