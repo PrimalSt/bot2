@@ -1,5 +1,41 @@
 // Инициализация Telegram Web App
 //Telegram.WebApp.ready();
+async function fetchBalance() {
+  try {
+    const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
+
+    if (!telegramId) {
+      throw new Error("Telegram ID не найден. Проверьте, запущено ли приложение через Telegram.");
+    }
+
+    const response = await fetch("/api/balance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ telegram_id: telegramId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка сервера.");
+    }
+
+    const data = await response.json();
+    return data.balance;
+  } catch (error) {
+    console.error("Ошибка при запросе баланса:", error);
+    alert("Не удалось получить баланс: " + error.message);
+    return null;
+  }
+}
+async function updateBalanceDisplay() {
+  const balanceElement = document.getElementById("balance");
+  const balance = await fetchBalance();
+  if (balance !== null) {
+    balanceElement.textContent = `Ваш баланс: ${balance} монет`;
+  }
+}
 document.addEventListener("DOMContentLoaded", () => {
 
   const slotsButton = document.getElementById("slots");
@@ -48,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("slots").addEventListener("click", async () => {
+
     if (isSpinning) {
       alert("Игра уже началась! Дождитесь окончания текущей игры.");
       return;
@@ -93,14 +130,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }, index * 1000); // Останавливаем каждый слот с задержкой
 
         // Добавление эффекта выигрыша/проигрыша
-        if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
-          setTimeout(() => {
-            const slot = slotElements[index]
+        setTimeout(() => {
+          const slot = slotElements[index]; // Получаем элемент слота
+          if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
             slot.classList.add("winning");
-          }, 2200);
-        } else {
-          slot.classList.add("losing");
-        }
+          } else {
+            slot.classList.add("losing");
+          }
+        }, 2200);
       });
 
       // Показ сообщения о выигрыше
@@ -109,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
           : "Увы, вы ничего не выиграли. Попробуйте снова!";
         resultText.style.color = result.win_amount > 0 ? "green" : "red";
+
         isSpinning = false;
         slotsButton.disabled = false;
       }, 2200);
@@ -119,35 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function fetchBalance() {
-  try {
-    const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
 
-    if (!telegramId) {
-      throw new Error("Telegram ID не найден. Проверьте, запущено ли приложение через Telegram.");
-    }
-
-    const response = await fetch("/api/balance", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ telegram_id: telegramId }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Ошибка сервера.");
-    }
-
-    const data = await response.json();
-    return data.balance;
-  } catch (error) {
-    console.error("Ошибка при запросе баланса:", error);
-    alert("Не удалось получить баланс: " + error.message);
-    return null;
-  }
-}
 
 async function playSlots(telegramId, bet) {
   try {
