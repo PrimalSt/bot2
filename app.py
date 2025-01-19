@@ -158,7 +158,7 @@ async def get_balance_handler(request):
     return web.json_response({"error": "User not found"}, status=404)
 
 app.router.add_get("/api/balance", get_balance_handler)
-
+app.router.add_post("/api/balance", get_balance_handler)
 # API: Игра в слоты
 async def slots(request):
     try:
