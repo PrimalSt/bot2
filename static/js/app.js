@@ -1,12 +1,15 @@
 // Инициализация Telegram Web App
 //Telegram.WebApp.ready();
-if (!telegramId || !bet) {
-  console.error("telegram_id и bet обязательны для запроса");
-  alert("Ошибка: telegram_id и ставка обязательны для игры в слоты");
-  return;
-}
-
 document.addEventListener("DOMContentLoaded", () => {
+
+  const slotsButton = document.getElementById("slots");
+
+  if (!slotsButton) {
+    console.error("Элемент с ID 'slots' не найден в DOM.");
+  } else {
+    console.log("Элемент с ID 'slots' найден.");
+  }
+
   if (typeof Telegram !== "undefined" && Telegram.WebApp) {
     const tg = Telegram.WebApp;
     const initData = tg.initDataUnsafe;

@@ -160,7 +160,7 @@ async def get_balance_handler(request):
 app.router.add_get("/api/balance", get_balance_handler)
 
 # API: Игра в слоты
-async def slots_handler(request):
+async def slots(request):
     try:
         # Получение данных запроса
         data = await request.json()
@@ -223,8 +223,8 @@ async def cors_middleware(request, handler):
 
 app.middlewares.append(cors_middleware)
 
-app.router.add_post("/api/slots", slots_handler)
-app.router.add_get("/api/slots", slots_handler)
+app.router.add_post("/api/slots", slots)
+app.router.add_get("/api/slots", slots)
 app.router.add_get("/", root_handler)
 # Запуск приложения
 if __name__ == '__main__':
