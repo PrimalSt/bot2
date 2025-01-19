@@ -70,11 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // Автоматическое обновление баланса каждые 10 секунд
-      setInterval(() => {
-        fetchBalance(telegramId).then((balance) => {
-          document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
-        });
-      }, 10000);
+      // setInterval(() => {
+      //   fetchBalance(telegramId).then((balance) => {
+      //    document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
+      //});
+      //  }, 10000);
 
     } else {
       alert("Ошибка: не удалось получить данные пользователя. Убедитесь, что приложение открыто через Telegram.");
@@ -133,6 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
           const slot = slotElements[index]; // Получаем элемент слота
           if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
+            if (symbol === "⭐") {
+              slot.classList.add("winning-star"); // Анимация вспышек для звёздочек
+            } else if (result.slots.every(s => s === symbol)) {
+              createFireworks(); // Фейерверки для других совпадений
+            }
             slot.classList.add("winning");
           } else {
             slot.classList.add("losing");
@@ -208,6 +213,32 @@ document.getElementById("daily-bonus").addEventListener("click", async () => {
     bonusMessage.style.color = "red";
   }
 });
+
+function createFireworks() {
+  const container = document.getElementById("fireworks-container");
+
+  for (let i = 0; i < 10; i++) {
+    const firework = document.createElement("div");
+    firework.classList.add("firework");
+
+    // Генерация случайной позиции и цвета
+    const randomX = Math.random() * 100 + "%";
+    const randomY = Math.random() * 100 + "%";
+    const colors = ["red", "blue", "green", "yellow", "purple"];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    firework.style.left = randomX;
+    firework.style.top = randomY;
+    firework.style.backgroundColor = randomColor;
+
+    container.appendChild(firework);
+
+    // Удаление фейерверка после завершения анимации
+    setTimeout(() => {
+      firework.remove();
+    }, 800);
+  }
+}
 
 async function fetchLeaderboard() {
   try {
