@@ -80,7 +80,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // Добавление эффекта выигрыша/проигрыша
           if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
-            slot.classList.add("winning");
+            setTimeout(() => {
+              slot.classList.add("winning");
+            }, 3500);
           } else {
             slot.classList.add("losing");
           }
@@ -93,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
           : "Увы, вы ничего не выиграли. Попробуйте снова!";
         resultText.style.color = result.win_amount > 0 ? "green" : "red";
-      }, 3000);
+      }, 3500);
     } catch (error) {
       console.error("Ошибка в игре слоты:", error);
       alert("Произошла ошибка при запуске игры. Попробуйте позже.");
