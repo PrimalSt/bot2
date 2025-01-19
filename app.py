@@ -160,7 +160,6 @@ async def get_balance_handler(request):
 app.router.add_get("/api/balance", get_balance_handler)
 
 # API: Игра в слоты
-@web.post("/api/slots")
 async def slots_handler(request):
     try:
         # Получение данных запроса
