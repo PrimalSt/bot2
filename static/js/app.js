@@ -70,9 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const result = await playSlots(telegramId, bet);
-      fetchBalance(telegramId).then((balance) => {
-        document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
-      });
+      setTimeout(() => {
+        fetchBalance(telegramId).then((balance) => {
+          document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
+        });
+      }, 3000);
       // Останавливаем анимацию слотов и показываем результат
       result.slots.forEach((symbol, index) => {
         setTimeout(() => {
