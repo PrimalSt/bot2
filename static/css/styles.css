@@ -1,32 +1,50 @@
 body {
   font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
-#app {
-  margin-top: 50px;
+
+.container {
+  max-width: 600px;
+  margin: 50px auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+h1 {
+  font-size: 2.5rem;
+  color: #444;
+}
+
 #slots-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;
   margin: 20px 0;
 }
 
 .slot {
-  width: 50px;
-  height: 50px;
-  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  font-size: 2.5rem;
   text-align: center;
-  line-height: 50px;
+  line-height: 60px;
   border: 2px solid #000;
   border-radius: 5px;
   background-color: #f9f9f9;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   animation: spin 1s infinite;
 }
-#slots-container.spinning .slot {
-  animation: spin 1s infinite linear;
+
+.slot.spinning {
+  animation: spin 0.5s infinite linear;
 }
+
 @keyframes spin {
   0% { transform: rotateX(0deg); }
   25% { transform: rotateX(90deg); }
@@ -35,6 +53,39 @@ body {
   100% { transform: rotateX(360deg); }
 }
 
-.slot.stopped {
-  animation: none;
+button {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  font-size: 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+input {
+  margin: 10px auto;
+  padding: 5px;
+  font-size: 1rem;
+  display: block;
+  width: 200px;
+}
+
+#result {
+  font-size: 1.2rem;
+  color: #444;
+  margin-top: 20px;
+}
+
+.game-result {
+  margin-top: 20px;
+  font-size: 1.5rem;
+  color: green;
 }

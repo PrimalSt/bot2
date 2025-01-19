@@ -4,21 +4,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Казино</title>
+  <title>Казино 🎰</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 
 <body>
-  <h1>Казино 🎰</h1>
-  <p id="username">Привет, пользователь!</p>
-  <p id="balance">Ваш баланс: ...</p>
-  <input id="bet-amount" type="number" placeholder="Введите ставку">
-  <div id="slots-container">
-    <div class="slot" id="slot1">🍒</div>
-    <div class="slot" id="slot2">🍋</div>
-    <div class="slot" id="slot3">🍉</div>
+  <div class="container">
+    <h1>Казино 🎰</h1>
+    <p id="username">Привет, пользователь!</p>
+    <p id="balance">Ваш баланс: ...</p>
+    <div id="slots-container">
+      <div class="slot" id="slot1">🍒</div>
+      <div class="slot" id="slot2">🍒</div>
+      <div class="slot" id="slot3">🍒</div>
+    </div>
+    <input id="bet-amount" type="number" placeholder="Введите ставку" min="1">
+    <button id="slots">Играть в слоты</button>
+    <p id="result"></p>
   </div>
-  <button id="slots">Запустить слоты</button>
-  <p id="game-result"></p>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="/static/js/app.js"></script>
 </body>

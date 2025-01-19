@@ -3,6 +3,11 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   const slotsButton = document.getElementById("slots");
+  const slotElements = [
+    document.getElementById("slot1"),
+    document.getElementById("slot2"),
+    document.getElementById("slot3")
+  ];
 
   if (!slotsButton) {
     console.error("Элемент с ID 'slots' не найден в DOM.");
@@ -56,18 +61,34 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Запуск анимации крутки слотов
+    slotElements.forEach(slot => {
+      slot.classList.add("spinning");
+      slot.textContent = "🍒"; // Устанавливаем дефолтный символ
+    });
+
     try {
       const result = await playSlots(telegramId, bet);
       balanceElement.innerText = `Ваш новый баланс: ${result.new_balance} монет`;
 
-      // Анимация результата
-      const resultElement = document.createElement("div");
-      resultElement.className = "game-result";
-      resultElement.textContent = result.message;
-      document.body.appendChild(resultElement);
+      // Останавливаем анимацию слотов и показываем результат
+      result.slots.forEach((symbol, index) => {
+        setTimeout(() => {
+          slotElements[index].classList.remove("spinning");
+          slotElements[index].textContent = symbol;
+        }, index * 1000); // Останавливаем каждый слот с задержкой
+      });
 
+      // Показ сообщения о выигрыше
       setTimeout(() => {
-        resultElement.remove();
+        const resultElement = document.createElement("div");
+        resultElement.className = "game-result";
+        resultElement.textContent = result.message;
+        document.body.appendChild(resultElement);
+
+        setTimeout(() => {
+          resultElement.remove();
+        }, 3000);
       }, 3000);
 
     } catch (error) {
