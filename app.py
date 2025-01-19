@@ -12,7 +12,7 @@ import sqlite3
 from database import init_db, add_user, get_balance, update_balance
 import random
 from aiogram.types import Update
-from datetime import datetime
+import datetime
 
 init_db()
 
