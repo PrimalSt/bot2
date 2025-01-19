@@ -77,8 +77,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function fetchBalance(telegramId) {
+async function fetchBalance() {
   try {
+    const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
+
+    if (!telegramId) {
+      throw new Error("Telegram ID не найден. Проверьте, запущено ли приложение через Telegram.");
+    }
+
     const response = await fetch("/api/balance", {
       method: "POST",
       headers: {
@@ -86,14 +92,18 @@ async function fetchBalance(telegramId) {
       },
       body: JSON.stringify({ telegram_id: telegramId }),
     });
-    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error(data.error || "Не удалось получить баланс.");
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка сервера.");
     }
+
+    const data = await response.json();
     return data.balance;
   } catch (error) {
     console.error("Ошибка при запросе баланса:", error);
-    return "Ошибка загрузки";
+    alert("Не удалось получить баланс: " + error.message);
+    return null;
   }
 }
 

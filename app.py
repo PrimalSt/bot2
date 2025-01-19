@@ -143,19 +143,36 @@ app.router.add_static("/static/", path="static", name="static")
 
 # API: Получение баланса
 async def get_balance_handler(request):
-    telegram_id = request.query.get("telegram_id")
-    if not telegram_id:
-        return web.json_response({"error": "telegram_id is required"}, status=400)
+    try:
+        # Извлекаем JSON-данные из POST-запроса
+        data = await request.json()
+        telegram_id = data.get("telegram_id")
 
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
-    result = cursor.fetchone()
-    conn.close()
+        # Проверяем, что telegram_id передан
+        if not telegram_id:
+            return web.json_response({"error": "telegram_id is required"}, status=400)
 
-    if result:
-        return web.json_response({"balance": result[0]})
-    return web.json_response({"error": "User not found"}, status=404)
+        # Подключение к базе данных
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Запрос баланса пользователя
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        result = cursor.fetchone()
+        conn.close()
+
+        # Проверяем, найден ли пользователь
+        if result:
+            balance = result[0]
+            return web.json_response({"balance": balance})
+        else:
+            return web.json_response({"error": "User not found"}, status=404)
+
+    except sqlite3.Error as e:
+        return web.json_response({"error": f"Database error: {str(e)}"}, status=500)
+
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 app.router.add_get("/api/balance", get_balance_handler)
 app.router.add_post("/api/balance", get_balance_handler)
