@@ -218,10 +218,16 @@ async def slots(request):
 
         # Обновляем баланс
         cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        new_balance = cursor.fetchone()[0]
         conn.commit()
         conn.close()
 
-        return web.json_response({"slots": slots, "win_amount": win_amount})
+        return web.json_response({
+            "slots": slots,
+            "win_amount": win_amount,
+            "new_balance": new_balance
+        })
 
     except sqlite3.Error as e:
         return web.json_response({"error": f"Database error: {str(e)}"}, status=500)

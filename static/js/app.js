@@ -70,7 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const result = await playSlots(telegramId, bet);
-      balanceElement.innerText = `Ваш новый баланс: ${result.new_balance} монет`;
+      fetchBalance(telegramId).then((balance) => {
+        document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
+      });
       // Останавливаем анимацию слотов и показываем результат
       result.slots.forEach((symbol, index) => {
         setTimeout(() => {
@@ -82,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
             setTimeout(() => {
               slot.classList.add("winning");
-            }, 3500);
+            }, 2500);
           } else {
             slot.classList.add("losing");
           }
@@ -95,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
           : "Увы, вы ничего не выиграли. Попробуйте снова!";
         resultText.style.color = result.win_amount > 0 ? "green" : "red";
-      }, 3500);
+      }, 2500);
     } catch (error) {
       console.error("Ошибка в игре слоты:", error);
       alert("Произошла ошибка при запуске игры. Попробуйте позже.");
