@@ -14,7 +14,7 @@ def init_db():
         telegram_id TEXT UNIQUE,
         username TEXT,
         balance INTEGER DEFAULT 1000
-        last_bonus TEXT DEFAULT NULL
+        last_bonus TEXT 
     )
     ''')
 
@@ -30,7 +30,11 @@ def init_db():
         FOREIGN KEY (user_id) REFERENCES users (id)
     )
     ''')
-
+    cursor.execute("PRAGMA table_info(users)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if "last_bonus" not in columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN last_bonus TEXT DEFAULT NULL")
+        
     conn.commit()
     conn.close()
 
