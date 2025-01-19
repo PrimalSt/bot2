@@ -12,7 +12,13 @@
   <p id="username">Привет, пользователь!</p>
   <p id="balance">Ваш баланс: ...</p>
   <input id="bet-amount" type="number" placeholder="Введите ставку">
-  <button id="slots">Играть в слоты</button>
+  <div id="slots-container">
+    <div class="slot" id="slot1">🍒</div>
+    <div class="slot" id="slot2">🍋</div>
+    <div class="slot" id="slot3">🍉</div>
+  </div>
+  <button id="slots">Запустить слоты</button>
+  <p id="game-result"></p>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="/static/js/app.js"></script>
 </body>
