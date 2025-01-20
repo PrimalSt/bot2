@@ -212,8 +212,7 @@ document.getElementById("daily-bonus").addEventListener("click", async () => {
       throw new Error(result.error || "Не удалось получить бонус.");
     }
 
-    bonusMessage.textContent = "Ежедневный бонус успешно зачислен!";
-    bonusMessage.style.color = "green";
+    showNotification(`Вы получили ежедневный бонус: 100 монет!`, "success");
     fetchBalance(telegramId).then((balance) => {
       document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
     })
@@ -249,6 +248,7 @@ function createFireworks() {
   }
 }
 
+// Улучшение таблицы лидеров с современным оформлением
 async function fetchLeaderboard() {
   try {
     const response = await fetch("/api/leaderboard");
@@ -259,11 +259,33 @@ async function fetchLeaderboard() {
     }
 
     const leaderboardElement = document.getElementById("leaderboard");
-    leaderboardElement.innerHTML = result.leaderboard
-      .map((player) => `<li>${player[0]}: ${player[1]} монет</li>`)
-      .join("");
+    leaderboardElement.innerHTML = '';
+
+    const table = document.createElement('table');
+    const headerRow = document.createElement('tr');
+
+    ['Место', 'Игрок', 'Баланс'].forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      headerRow.appendChild(th);
+    });
+
+    table.appendChild(headerRow);
+
+    result.leaderboard.forEach((player, index) => {
+      const row = document.createElement('tr');
+      [index + 1, player[0], player[1]].forEach(text => {
+        const td = document.createElement('td');
+        td.textContent = text;
+        row.appendChild(td);
+      });
+      table.appendChild(row);
+    });
+
+    leaderboardElement.appendChild(table);
   } catch (error) {
     console.error("Ошибка при загрузке таблицы лидеров:", error);
+    showNotification("Не удалось загрузить таблицу лидеров", "error");
   }
 }
 
