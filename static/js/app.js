@@ -1,5 +1,13 @@
 // Инициализация Telegram Web App
 //Telegram.WebApp.ready();
+const showNotification = (message, type = "info") => {
+  const notification = document.createElement("div");
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 2200);
+};
+
 async function fetchBalance() {
   try {
     const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
@@ -147,10 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Показ сообщения о выигрыше
       setTimeout(() => {
-        resultText.textContent = result.win_amount > 0
-          ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
-          : "Увы, вы ничего не выиграли. Попробуйте снова!";
-        resultText.style.color = result.win_amount > 0 ? "green" : "red";
+        if (result.win_amount > 0) {
+          showNotification(`Поздравляем! Вы выиграли ${result.win_amount} монет!`, "success");
+        } else {
+          showNotification("Увы, вы проиграли. Попробуйте снова!", "error");
+        }
 
         isSpinning = false;
         slotsButton.disabled = false;
