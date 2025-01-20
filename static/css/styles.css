@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  background: linear-gradient(to bottom, #f0f8ff, #87cefa);
+  background: linear-gradient(to bottom, #000000, #ffffff);
   margin: 0;
   padding: 0;
   display: flex;
@@ -25,7 +25,7 @@ h1 {
 }
 
 h2 {
-  font-size: 5rem;
+  font-size: 3rem;
   color: #01ffff4b;
   text-shadow: 2px 2px 4px rgba(8, 49, 77, 0.3);
 }
