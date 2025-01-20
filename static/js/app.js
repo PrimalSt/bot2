@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Запуск анимации крутки слотов
     slotElements.forEach(slot => {
       slot.classList.add("spinning");
-      slot.classList.remove("winning", "losing");
+      slot.classList.remove("winning", "losing", "winning-star");
       // slot.textContent = "🍒"; // Устанавливаем дефолтный символ
     });
 
@@ -257,6 +257,7 @@ async function fetchLeaderboard() {
     console.error("Ошибка при загрузке таблицы лидеров:", error);
   }
 }
+
 
 // Загружаем таблицу лидеров при старте
 document.addEventListener("DOMContentLoaded", fetchLeaderboard);

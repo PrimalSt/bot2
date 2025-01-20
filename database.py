@@ -6,7 +6,12 @@ def init_db():
     """Инициализация базы данных"""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
+    cursor.execute('''
+    INSERT INTO shop_items (name, price, description)
+    VALUES
+    ('Увеличение выигрыша', 500, 'Увеличивает все выигрыши на 20%'),
+    ('Дополнительные монеты', 300, 'Получите 100 монет сразу')
+    ''')    
     # Создание таблицы пользователей
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
@@ -17,7 +22,14 @@ def init_db():
         last_bonus TEXT 
     )
     ''')
-
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS shop_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        price INTEGER NOT NULL,
+        description TEXT
+    )
+    ''')
     # Создание таблицы игр
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS games (
