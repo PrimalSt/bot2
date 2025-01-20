@@ -12,21 +12,21 @@ body {
 .container {
   max-width: 600px;
   text-align: center;
-  background: white;
+  background: rgb(95, 95, 95);
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
-  font-size: 3rem;
-  color: #ffffff;
+  font-size: 2rem;
+  color: #000000;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 h2 {
-  font-size: 3rem;
-  color: #01ffff4b;
+  font-size: 1rem;
+  color: #0c3636ef;
   text-shadow: 2px 2px 4px rgba(8, 49, 77, 0.3);
 }
 
@@ -45,14 +45,14 @@ h2 {
   line-height: 80px;
   border: 3px solid #333;
   border-radius: 10px;
-  background: linear-gradient(145deg, #f5f5f5, #e5e5e5);
+  background: linear-gradient(145deg, #ffffff, #a09d9d);
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.7);
   transition: transform 0.2s ease-in-out, background-color 0.3s ease;
 }
 
 .slot.spinning {
   animation: spin 0.5s infinite linear;
-  box-shadow: 0px 0px 10px 5px rgba(206, 40, 48, 0.699);
+  box-shadow: 0px 0px 10px 5px rgba(255, 0, 0, 0.699);
 }
 button {
   margin: 10px;
@@ -60,8 +60,8 @@ button {
   font-size: 1rem;
   border: none;
   border-radius: 5px;
-  background-color: #007bff;
-  color: white;
+  background-color: #bdbdbd;
+  color: rgb(255, 255, 255);
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -84,7 +84,7 @@ button {
 }
 
 button:hover {
-  background-color: #0056b3;
+  background-color: #242323;
   transform: translateY(-2px);
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
 }
@@ -96,16 +96,16 @@ input {
   display: block;
   width: 250px;
   background-color: #333333;
-  border: 2px solid #007bff;
+  border: 2px solid #272727;
   border-radius: 8px;
-  color: #ffffff;
+  color: #d3d3d3;
   transition: all 0.3s ease;
 }
 
 input:focus {
   outline: none;
-  border-color: #0056b3;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+  border-color: #757575;
+  box-shadow: 0 0 8px rgba(20, 20, 20, 0.5);
 }
 
 #result {
@@ -117,12 +117,18 @@ input:focus {
 #result.winning {
   transform: scale(1.2);
   color: green;
+  border: 2px solid green;
+  border-radius: 5px;
+  background-color: #000000f8;
 }
 
 #result.losing {
   transform: scale(0.8);
   color: red;
   opacity: 0.8;
+  border: 2px solid green;
+  border-radius: 5px;
+  background-color: #000000f8;
 }
 .game-result {
   margin-top: 25px;
