@@ -14,7 +14,9 @@ import random
 from aiogram.types import Update
 import datetime
 
-init_db()
+if __name__ == "__main__":
+    init_db()
+    print("База данных инициализирована.")
 
 # Путь к базе данных
 DB_PATH = "casino_bot.db"
@@ -103,6 +105,7 @@ async def handle_webhook(request):
 # Регистрация маршрута вебхука
 
 app.router.add_post("/webhook", handle_webhook)
+app.router.add_get("/webhook", handle_webhook)
 
 # Обработчик запуска приложения
 async def on_startup(app: web.Application):
@@ -148,6 +151,7 @@ async def shop_handler(request):
         return web.json_response({"error": str(e)}, status=500)
 
 app.router.add_post("/shop", shop_handler)
+app.router.add_get("/shop", shop_handler)
 
 async def buy_item_handler(request):
     try:
@@ -187,6 +191,7 @@ async def buy_item_handler(request):
         return web.json_response({"error": str(e)}, status=500)
     
 app.router.add_post("/api/shop/buy", buy_item_handler)
+app.router.add_get("/api/shop/buy", buy_item_handler)
 
 async def daily_bonus_handler(request):
     try:
@@ -227,6 +232,7 @@ async def daily_bonus_handler(request):
         return web.json_response({"error": str(e)}, status=500)
 
 app.router.add_post("/api/daily_bonus", daily_bonus_handler) 
+app.router.add_get("/api/daily_bonus", daily_bonus_handler) 
 
 async def leaderboard_handler(request):
     try:
@@ -356,6 +362,8 @@ app.router.add_post("/api/slots", slots)
 app.router.add_get("/api/slots", slots)
 app.router.add_post("/", main_page)
 app.router.add_post("/shop", shop_page)
+app.router.add_get("/", main_page)
+app.router.add_get("/shop", shop_page)
 # Запуск приложения
 if __name__ == '__main__':
     try:
