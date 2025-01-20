@@ -217,8 +217,7 @@ document.getElementById("daily-bonus").addEventListener("click", async () => {
       document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
     })
   } catch (error) {
-    bonusMessage.textContent = error.message;
-    bonusMessage.style.color = "red";
+    showNotification(`Вы получали уже сегодня свой бонус`, "error");
   }
 });
 
