@@ -7,6 +7,15 @@ const showNotification = (message, type = "info") => {
   document.body.appendChild(notification);
   setTimeout(() => notification.remove(), 2200);
 };
+const symbolImages = {
+  "🍒": "/static/images/cherry.png",
+  "🍋": "/static/images/lemon.png",
+  "🔔": "/static/images/daimond.png",
+  "⭐": "/static/images/seven.png",
+  "🍉": "/static/images/watermelon.png",
+  "🍇": "/static/images/grape.png",
+  "🥝": "/static/images/plum.png"
+};
 
 
 // Элементы интерфейса
