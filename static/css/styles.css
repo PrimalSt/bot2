@@ -229,7 +229,6 @@ tr:hover {
 .reel {
   display: flex;
   flex-direction: column;
-  animation: spin 1s linear infinite;
 }
 
 .symbol {
@@ -273,13 +272,4 @@ tr:hover {
 .lose {
   color: red;
   font-weight: bold;
-}
-
-@keyframes spin {
-  from {
-      transform: translateY(0);
-  }
-  to {
-      transform: translateY(-300%);
-  }
 }
