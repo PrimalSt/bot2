@@ -13,6 +13,7 @@ from database import init_db, add_user, get_balance, update_balance
 import random
 from aiogram.types import Update
 import datetime
+import json
 
 if __name__ == "__main__":
     init_db()
@@ -286,6 +287,7 @@ async def get_balance_handler(request):
 
 app.router.add_get("/api/balance", get_balance_handler)
 app.router.add_post("/api/balance", get_balance_handler)
+
 # API: Игра в слоты
 async def slots(request):
     try:
@@ -317,18 +319,18 @@ async def slots(request):
         cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (bet, telegram_id))
 
         # Генерация слотов
-        SYMBOLS = ["🍒", "🍋", "🍊", "🍇", "⭐"]
-        slots = [random.choice(SYMBOLS) for _ in range(3)]
+        SYMBOLS = ["🍒", "🍋", "🔔", "⭐", "🍉", "🍇", "🥝"]
+        reels = [[random.choice(SYMBOLS) for _ in range(5)] for _ in range(3)]  # 3 ряда, 5 барабанов
         win_amount = 0
 
-        # Логика выигрыша
-        if slots[0] == slots[1] == slots[2]:  # Все три совпадают
+        # Проверка выигрышей
+        if all(reels[0][i] == reels[1][i] == reels[2][i] for i in range(5)):  # Полный горизонтальный выигрыш
+            win_amount = bet * 50
+        elif any(reels[0][i] == reels[1][i] == reels[2][i] for i in range(5)):  # Линия из 3 символов
             win_amount = bet * 10
-        elif slots.count("⭐") == 3:  # Все три символа - звёзды
-            win_amount = bet * 20
-        elif slots[0] == slots[1] or slots[1] == slots[2] or slots[0] == slots[2]:  # Два совпадают
-            win_amount = bet * 2
-
+        elif "⭐" in reels[1]:  # Звезда в центральной линии
+            win_amount = bet * 5
+            
         # Обновляем баланс
         cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
         cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))

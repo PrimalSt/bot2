@@ -8,6 +8,31 @@ const showNotification = (message, type = "info") => {
   setTimeout(() => notification.remove(), 2200);
 };
 
+const symbolImages = {
+  "🍒": "/static/images/cherry.png",
+  "🍋": "/static/images/lemon.png",
+  "🔔": "/static/images/daimond.png",
+  "⭐": "/static/images/seven.png",
+  "🍉": "/static/images/watermelon.png",
+  "🍇": "/static/images/grape.png",
+  "🥝": "/static/images/plum.png"
+};
+
+// Элементы интерфейса
+const spinButton = document.getElementById("spinButton");
+const balanceElement = document.getElementById("balance");
+const resultElement = document.getElementById("result");
+const reelsContainer = document.getElementById("reels");
+
+function updateReels(reels) {
+  const reelContainers = document.querySelectorAll('.reel');
+  reels.forEach((reel, index) => {
+    reelContainers[index].innerHTML = reel
+      .map(symbol => `<img src="${symbolImages[symbol]}" alt="${symbol}" class="symbol">`)
+      .join('');
+  });
+}
+
 async function fetchBalance() {
   try {
     const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
@@ -46,7 +71,7 @@ async function updateBalanceDisplay() {
 }
 document.addEventListener("DOMContentLoaded", () => {
 
-  const slotsButton = document.getElementById("slots");
+  const slotsButton = document.getElementById("spinButton");
   const slotElements = [
     document.getElementById("slot1"),
     document.getElementById("slot2"),
@@ -90,111 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     alert("Telegram Web App API недоступен. Убедитесь, что вы открыли приложение через Telegram.");
   }
-
-  document.getElementById("slots").addEventListener("click", async () => {
-
-    if (isSpinning) {
-      alert("Игра уже началась! Дождитесь окончания текущей игры.");
-      return;
-    }
-
-    const betInput = document.getElementById("bet-amount");
-    const bet = parseInt(betInput.value);
-    const balanceElement = document.getElementById("balance");
-    const telegramId = Telegram.WebApp.initDataUnsafe.user.id;
-
-    if (!telegramId) {
-      alert("Ошибка: Telegram ID не найден.");
-      return;
-    }
-
-    if (!bet || bet <= 0) {
-      alert("Пожалуйста, введите корректную ставку.");
-      return;
-    }
-    isSpinning = true;
-    slotsButton.disabled = true;
-
-    // Запуск анимации крутки слотов
-    slotElements.forEach(slot => {
-      slot.classList.add("spinning");
-      slot.classList.remove("winning", "losing", "winning-star");
-      // slot.textContent = "🍒"; // Устанавливаем дефолтный символ
-    });
-
-    try {
-      const result = await playSlots(telegramId, bet);
-      setTimeout(() => {
-        fetchBalance(telegramId).then((balance) => {
-          document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
-        });
-      }, 2200);
-      // Останавливаем анимацию слотов и показываем результат
-      result.slots.forEach((symbol, index) => {
-        setTimeout(() => {
-          const slot = slotElements[index];
-          slot.classList.remove("spinning");
-          slot.textContent = symbol;
-        }, index * 1000); // Останавливаем каждый слот с задержкой
-
-        // Добавление эффекта выигрыша/проигрыша
-        setTimeout(() => {
-          const slot = slotElements[index]; // Получаем элемент слота
-          if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
-            if (symbol === "⭐") {
-              slot.classList.add("winning-star"); // Анимация вспышек для звёздочек
-            } else if (result.slots.every(s => s === symbol)) {
-              createFireworks(); // Фейерверки для других совпадений
-            }
-            slot.classList.add("winning");
-          } else {
-            slot.classList.add("losing");
-          }
-        }, 2200);
-      });
-
-      // Показ сообщения о выигрыше
-      setTimeout(() => {
-        if (result.win_amount > 0) {
-          showNotification(`Поздравляем! Вы выиграли ${result.win_amount} монет!`, "success");
-        } else {
-          showNotification("Увы, вы проиграли. Попробуйте снова!", "error");
-        }
-
-        isSpinning = false;
-        slotsButton.disabled = false;
-      }, 2200);
-    } catch (error) {
-      console.error("Ошибка в игре слоты:", error);
-      alert("Произошла ошибка при запуске игры. Попробуйте позже.");
-    }
-  });
 });
 
 
 
-async function playSlots(telegramId, bet) {
-  try {
-    const response = await fetch("/api/slots", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        telegram_id: telegramId,
-        bet: bet,
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Не удалось сыграть в слоты.");
-    }
-    return data;
-  } catch (error) {
-    console.error("Ошибка при игре в слоты:", error);
-    throw error;
-  }
-}
 
 document.getElementById("daily-bonus").addEventListener("click", async () => {
   const telegramId = Telegram.WebApp.initDataUnsafe.user.id;
@@ -287,7 +211,102 @@ async function fetchLeaderboard() {
     showNotification("Не удалось загрузить таблицу лидеров", "error");
   }
 }
+// Вращение барабанов
+async function spinSlots() {
+  const bet = parseInt(document.getElementById("bet").value);
+  if (isNaN(bet) || bet <= 0) {
+    alert("Введите корректную ставку.");
+    return;
+  }
 
+  // Блокируем кнопку во время вращения
+  spinButton.disabled = true;
+
+  // Отображаем анимацию вращения
+  startSpinning();
+
+  try {
+    // Отправляем запрос на сервер
+    const response = await fetch("/api/slots", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        telegram_id: Telegram.WebApp.initDataUnsafe.user.id,
+        bet: bet,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Ошибка при обработке игры.");
+    }
+
+    // Останавливаем анимацию и обновляем результат
+    setTimeout(() => {
+      stopSpinning(data.reels);
+      updateBalance(data.new_balance);
+      showResult(data.win_amount);
+      spinButton.disabled = false;
+    }, 2000); // Останавливаем через 2 секунды
+  } catch (error) {
+    console.error("Ошибка при запуске спинов:", error);
+    alert("Произошла ошибка. Попробуйте позже.");
+    spinButton.disabled = false;
+  }
+}
+
+// Анимация вращения барабанов
+function startSpinning() {
+  reelsContainer.innerHTML = "";
+  for (let i = 0; i < 5; i++) {
+    const reel = document.createElement("div");
+    reel.className = "reel spinning";
+    reel.innerHTML = Array.from({ length: 10 })
+      .map(() => `<img src="${getRandomSymbolImage()}" class="symbol">`)
+      .join("");
+    reelsContainer.appendChild(reel);
+  }
+}
+
+// Остановка вращения с результатами
+function stopSpinning(reels) {
+  reelsContainer.innerHTML = "";
+  reels.forEach((reelSymbols, reelIndex) => {
+    const reel = document.createElement("div");
+    reel.className = "reel";
+    reel.innerHTML = reelSymbols
+      .map(symbol => `<img src="${symbolImages[symbol]}" class="symbol">`)
+      .join("");
+    reelsContainer.appendChild(reel);
+  });
+}
+
+// Обновление баланса
+function updateBalance(newBalance) {
+  balanceElement.textContent = `Баланс: ${newBalance} монет`;
+}
+
+// Отображение результата игры
+function showResult(winAmount) {
+  if (winAmount > 0) {
+    showNotification(`Поздравляем! Вы выиграли ${result.win_amount} монет!`, "success");
+  } else {
+    showNotification("Увы, вы проиграли. Попробуйте снова!", "error");
+  }
+}
+
+// Получение случайного символа для анимации
+function getRandomSymbolImage() {
+  const symbols = Object.keys(symbolImages);
+  const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+  return symbolImages[randomSymbol];
+}
+
+// Привязываем обработчик к кнопке
+spinButton.addEventListener("click", spinSlots);
 
 // Загружаем таблицу лидеров при старте
 document.addEventListener("DOMContentLoaded", fetchLeaderboard);

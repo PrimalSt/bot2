@@ -71,13 +71,6 @@ button {
   opacity: 0.8;
   transition: opacity 0.5s ease;
 }
-@keyframes spin {
-  0% { transform: rotateX(0deg); }
-  25% { transform: rotateX(90deg); }
-  50% { transform: rotateX(180deg); }
-  75% { transform: rotateX(270deg); }
-  100% { transform: rotateX(360deg); }
-}
 
 button:hover {
   background: #4d4d4d; /* Чуть светлее при наведении */
@@ -86,6 +79,7 @@ button:hover {
 button:active {
   transform: scale(0.95);
 }
+
 input {
   margin: 15px auto;
   padding: 12px;
@@ -230,4 +224,62 @@ tr:nth-child(even) {
 
 tr:hover {
   background: #444;
+}
+
+.reel {
+  display: flex;
+  flex-direction: column;
+  animation: spin 1s linear infinite;
+}
+
+.symbol {
+  font-size: 2rem;
+  text-align: center;
+  height: 100px;
+  line-height: 100px;
+  background: #fff;
+  border: 1px solid #000;
+}
+
+@keyframes spin {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-500%);
+  }
+}
+
+#spinButton {
+  padding: 10px 20px;
+  font-size: 1rem;
+  margin-top: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#spinButton:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.win {
+  color: green;
+  font-weight: bold;
+}
+
+.lose {
+  color: red;
+  font-weight: bold;
+}
+
+@keyframes spin {
+  from {
+      transform: translateY(0);
+  }
+  to {
+      transform: translateY(-300%);
+  }
 }
