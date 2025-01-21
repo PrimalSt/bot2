@@ -15,41 +15,21 @@
     <p id="username">Привет, пользователь!</p>
     <p id="balance">Ваш баланс: ...</p>
     <div class="slot-сontainer">
-      <div class="reel">
-        <div class="symbol">🍒</div>
-        <div class="symbol">🍋</div>
-        <div class="symbol">🔔</div>
-        <div class="symbol">⭐</div>
-        <div class="symbol">🍉</div>
+      <div id="reel" class="slot-machine">
       </div>
-      <div class="reel">
-        <div class="symbol">🍒</div>
-        <div class="symbol">🍋</div>
-        <div class="symbol">🔔</div>
-        <div class="symbol">⭐</div>
-        <div class="symbol">🍉</div>
-      </div>
-      <div class="reel">
-        <div class="symbol">🍒</div>
-        <div class="symbol">🍋</div>
-        <div class="symbol">🔔</div>
-        <div class="symbol">⭐</div>
-        <div class="symbol">🍉</div>
-      </div>
-    </div>
-    <input type="number" id="bet" placeholder="Ставка" min="1">
-    <button id="spinButton">Крутить!</button>
-    <p id="result"></p>
-    <p id="notification"></p>
-    <button id="daily-bonus">Получить ежедневный бонус</button>
-    <p id="bonus-message"></p>
-    <button onclick="location.href='templates/shop'" class="shop-button">Перейти в магазин 🛍️</button>
-    <h2>Таблица лидеров</h2>
-    <ul id="leaderboard"></ul>
+      <input type="number" id="bet" placeholder="Ставка" min="1">
+      <button id="spinButton">Крутить!</button>
+      <p id="result"></p>
+      <p id="notification"></p>
+      <button id="daily-bonus">Получить ежедневный бонус</button>
+      <p id="bonus-message"></p>
+      <button onclick="location.href='templates/shop'" class="shop-button">Перейти в магазин 🛍️</button>
+      <h2>Таблица лидеров</h2>
+      <ul id="leaderboard"></ul>
 
-  </div>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="/static/js/app.js"></script>
+    </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="/static/js/app.js"></script>
 </body>
 
 </html>

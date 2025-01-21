@@ -330,7 +330,7 @@ async def slots(request):
             win_amount = bet * 10
         elif "⭐" in reels[1]:  # Звезда в центральной линии
             win_amount = bet * 5
-            
+
         # Обновляем баланс
         cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
         cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
@@ -339,7 +339,7 @@ async def slots(request):
         conn.close()
 
         return web.json_response({
-            "slots": slots,
+            "reels": reels,
             "win_amount": win_amount,
             "new_balance": new_balance
         })
