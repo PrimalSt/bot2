@@ -249,29 +249,46 @@ async function spinSlots() {
   }
 }
 
-// Анимация вращения барабанов
+// Запуск анимации вращения
 function startSpinning() {
   reelsContainer.innerHTML = "";
+
   for (let i = 0; i < 5; i++) {
     const reel = document.createElement("div");
-    reel.className = "reel spinning";
-    reel.innerHTML = Array.from({ length: 10 })
-      .map(() => `<img src="${getRandomSymbolImage()}" class="symbol">`)
-      .join("");
+    reel.className = "reel";
+
+    // Добавляем 10 случайных символов
+    for (let j = 0; j < 10; j++) {
+      const img = document.createElement("img");
+      img.src = getRandomSymbolImage();
+      img.className = "symbol";
+      reel.appendChild(img);
+    }
+
     reelsContainer.appendChild(reel);
+
+    // Анимация вращения с GSAP
+    gsap.to(reel, {
+      y: -1000, // Сдвиг вверх (зависит от количества символов)
+      duration: 1 + i * 0.2, // Разная скорость для каждого барабана
+      ease: "power2.inOut",
+      repeat: -1,
+    });
   }
 }
 
-// Остановка вращения с результатами
+// Остановка анимации с результатами
 function stopSpinning(reels) {
-  reelsContainer.innerHTML = "";
-  reels.forEach((reelSymbols, reelIndex) => {
-    const reel = document.createElement("div");
-    reel.className = "reel";
-    reel.innerHTML = reelSymbols
+  const reelElements = Array.from(reelsContainer.children);
+
+  reelElements.forEach((reelElement, index) => {
+    // Останавливаем анимацию GSAP
+    gsap.killTweensOf(reelElement);
+
+    // Заменяем содержимое на итоговые символы
+    reelElement.innerHTML = reels[index]
       .map(symbol => `<img src="${symbolImages[symbol]}" class="symbol">`)
       .join("");
-    reelsContainer.appendChild(reel);
   });
 }
 
