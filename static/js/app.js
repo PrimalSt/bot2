@@ -291,16 +291,24 @@ function stopSpinning(reels) {
   const reelElements = Array.from(reelsContainer.children);
 
   reelElements.forEach((reelElement, index) => {
+    // Проверяем, что массив reels содержит данные
+    if (!Array.isArray(reels) || !Array.isArray(reels[index])) {
+      console.error(`Данные для барабана ${index} отсутствуют или некорректны. reels:`, reels);
+      return;
+    }
+
     // Останавливаем анимацию GSAP
     gsap.killTweensOf(reelElement);
 
     // Заменяем содержимое на итоговые символы
     reelElement.innerHTML = reels[index]
-      .map(symbol => `<img src="${symbolImages[symbol]}" class="symbol">`)
+      .map(symbol => {
+        const decodedSymbol = String.fromCodePoint(symbol.codePointAt(0));
+        return `<img src="${symbolImages[decodedSymbol]}" class="symbol">`;
+      })
       .join("");
   });
 }
-
 // Обновление баланса
 function updateBalance(newBalance) {
   balanceElement.textContent = `Баланс: ${newBalance} монет`;
