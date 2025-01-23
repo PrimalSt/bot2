@@ -12,9 +12,11 @@ import sqlite3
 from database import init_db, add_user, get_balance, update_balance
 import random
 from aiogram.types import Update
-from datetime import datetime
+import datetime
 
-init_db()
+if __name__ == "__main__":
+    init_db()
+    print("База данных инициализирована.")
 
 # Путь к базе данных
 DB_PATH = "casino_bot.db"
@@ -103,6 +105,7 @@ async def handle_webhook(request):
 # Регистрация маршрута вебхука
 
 app.router.add_post("/webhook", handle_webhook)
+app.router.add_get("/webhook", handle_webhook)
 
 # Обработчик запуска приложения
 async def on_startup(app: web.Application):
@@ -123,19 +126,72 @@ async def on_shutdown(app: web.Application):
         logger.error(f"Error during shutdown: {e}")
 
 # Обработчик для корневого маршрута "/"
-async def root_handler(request):
-    try:
-        return web.FileResponse('templates/index.html')  # Отдаем файл из папки "templates"
-    except FileNotFoundError:
-        logger.error("Template file not found")
-        return web.Response(status=404, text="Template not found")
-    except Exception as e:
-        logger.error(f"Error serving root handler: {e}")
-        return web.Response(status=500, text="Internal server error")
+async def main_page(request):
+    return web.FileResponse("./templates/index.html")
+
+async def shop_page(request):
+    return web.FileResponse("./templates/shop.html")
 
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
-app.router.add_static("/static/", path="static", name="static")
+app.router.add_static("/static/", "./static")
+
+async def shop_handler(request):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Получаем товары из базы
+        cursor.execute("SELECT id, name, price, description FROM shop_items")
+        items = cursor.fetchall()
+        conn.close()
+
+        return web.json_response({"items": [{"id": row[0], "name": row[1], "price": row[2], "description": row[3]} for row in items]})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+app.router.add_post("/shop", shop_handler)
+app.router.add_get("/shop", shop_handler)
+
+async def buy_item_handler(request):
+    try:
+        data = await request.json()
+        telegram_id = data.get("telegram_id")
+        item_id = data.get("item_id")
+
+        if not telegram_id or not item_id:
+            return web.json_response({"error": "telegram_id and item_id are required"}, status=400)
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Получаем товар
+        cursor.execute("SELECT price FROM shop_items WHERE id = ?", (item_id,))
+        item = cursor.fetchone()
+        if not item:
+            conn.close()
+            return web.json_response({"error": "Item not found"}, status=404)
+
+        price = item[0]
+
+        # Проверяем баланс
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        result = cursor.fetchone()
+        if not result or result[0] < price:
+            conn.close()
+            return web.json_response({"error": "Insufficient balance"}, status=400)
+
+        # Списываем монеты
+        cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (price, telegram_id))
+        conn.commit()
+        conn.close()
+
+        return web.json_response({"status": "success", "message": "Покупка успешна!"})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+    
+app.router.add_post("/api/shop/buy", buy_item_handler)
+app.router.add_get("/api/shop/buy", buy_item_handler)
 
 async def daily_bonus_handler(request):
     try:
@@ -160,7 +216,7 @@ async def daily_bonus_handler(request):
        
         if last_bonus == str(today):
             conn.close()
-            return web.json_response({"error": "Bonus already claimed today"}, status=400)
+            return web.json_response({"error": "Вы уже забирали бонус сегодня"}, status=400)
 
         # Обновляем баланс и дату бонуса
         cursor.execute("UPDATE users SET balance = balance + 100, last_bonus = ? WHERE telegram_id = ?", (today, telegram_id))
@@ -176,6 +232,7 @@ async def daily_bonus_handler(request):
         return web.json_response({"error": str(e)}, status=500)
 
 app.router.add_post("/api/daily_bonus", daily_bonus_handler) 
+app.router.add_get("/api/daily_bonus", daily_bonus_handler) 
 
 async def leaderboard_handler(request):
     try:
@@ -265,10 +322,10 @@ async def slots(request):
         win_amount = 0
 
         # Логика выигрыша
-        if slots[0] == slots[1] == slots[2]:  # Все три совпадают
+        if slots.count("⭐") == 3:  # Все три символа - звёзды
+            win_amount = bet * 20 
+        elif slots[0] == slots[1] == slots[2]:  # Все три совпадают
             win_amount = bet * 10
-        elif slots.count("⭐") == 3:  # Все три символа - звёзды
-            win_amount = bet * 20
         elif slots[0] == slots[1] or slots[1] == slots[2] or slots[0] == slots[2]:  # Два совпадают
             win_amount = bet * 2
 
@@ -303,7 +360,10 @@ app.middlewares.append(cors_middleware)
 
 app.router.add_post("/api/slots", slots)
 app.router.add_get("/api/slots", slots)
-app.router.add_get("/", root_handler)
+app.router.add_post("/", main_page)
+app.router.add_post("/shop", shop_page)
+app.router.add_get("/", main_page)
+app.router.add_get("/shop", shop_page)
 # Запуск приложения
 if __name__ == '__main__':
     try:

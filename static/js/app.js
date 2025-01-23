@@ -1,5 +1,49 @@
 // Инициализация Telegram Web App
 //Telegram.WebApp.ready();
+const showNotification = (message, type = "info") => {
+  const notification = document.createElement("div");
+  notification.textContent = message;
+  notification.className = `notification ${type}`;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 2200);
+};
+
+async function fetchBalance() {
+  try {
+    const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
+
+    if (!telegramId) {
+      throw new Error("Telegram ID не найден. Проверьте, запущено ли приложение через Telegram.");
+    }
+
+    const response = await fetch("/api/balance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ telegram_id: telegramId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Ошибка сервера.");
+    }
+
+    const data = await response.json();
+    return data.balance;
+  } catch (error) {
+    console.error("Ошибка при запросе баланса:", error);
+    alert("Не удалось получить баланс: " + error.message);
+    return null;
+  }
+}
+async function updateBalanceDisplay() {
+  const balanceElement = document.getElementById("balance");
+  const balance = await fetchBalance();
+  if (balance !== null) {
+    balanceElement.textContent = `Ваш баланс: ${balance} монет`;
+  }
+}
 document.addEventListener("DOMContentLoaded", () => {
 
   const slotsButton = document.getElementById("slots");
@@ -34,11 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // Автоматическое обновление баланса каждые 10 секунд
-      setInterval(() => {
-        fetchBalance(telegramId).then((balance) => {
-          document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
-        });
-      }, 10000);
+      // setInterval(() => {
+      //   fetchBalance(telegramId).then((balance) => {
+      //    document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
+      //});
+      //  }, 10000);
 
     } else {
       alert("Ошибка: не удалось получить данные пользователя. Убедитесь, что приложение открыто через Telegram.");
@@ -48,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("slots").addEventListener("click", async () => {
+
     if (isSpinning) {
       alert("Игра уже началась! Дождитесь окончания текущей игры.");
       return;
@@ -73,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Запуск анимации крутки слотов
     slotElements.forEach(slot => {
       slot.classList.add("spinning");
-      slot.classList.remove("winning", "losing");
+      slot.classList.remove("winning", "losing", "winning-star");
       // slot.textContent = "🍒"; // Устанавливаем дефолтный символ
     });
 
@@ -93,21 +138,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }, index * 1000); // Останавливаем каждый слот с задержкой
 
         // Добавление эффекта выигрыша/проигрыша
-        if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
-          setTimeout(() => {
+        setTimeout(() => {
+          const slot = slotElements[index]; // Получаем элемент слота
+          if (symbol === result.slots[0] && result.slots.every(s => s === symbol)) {
+            if (symbol === "⭐") {
+              slot.classList.add("winning-star"); // Анимация вспышек для звёздочек
+            } else if (result.slots.every(s => s === symbol)) {
+              createFireworks(); // Фейерверки для других совпадений
+            }
             slot.classList.add("winning");
-          }, 2200);
-        } else {
-          slot.classList.add("losing");
-        }
+          } else {
+            slot.classList.add("losing");
+          }
+        }, 2200);
       });
 
       // Показ сообщения о выигрыше
       setTimeout(() => {
-        resultText.textContent = result.win_amount > 0
-          ? `Поздравляем! Вы выиграли ${result.win_amount} монет! 🎉`
-          : "Увы, вы ничего не выиграли. Попробуйте снова!";
-        resultText.style.color = result.win_amount > 0 ? "green" : "red";
+        if (result.win_amount > 0) {
+          showNotification(`Поздравляем! Вы выиграли ${result.win_amount} монет!`, "success");
+        } else {
+          showNotification("Увы, вы проиграли. Попробуйте снова!", "error");
+        }
+
         isSpinning = false;
         slotsButton.disabled = false;
       }, 2200);
@@ -118,35 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function fetchBalance() {
-  try {
-    const telegramId = Telegram.WebApp.initDataUnsafe?.user?.id;
 
-    if (!telegramId) {
-      throw new Error("Telegram ID не найден. Проверьте, запущено ли приложение через Telegram.");
-    }
-
-    const response = await fetch("/api/balance", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ telegram_id: telegramId }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Ошибка сервера.");
-    }
-
-    const data = await response.json();
-    return data.balance;
-  } catch (error) {
-    console.error("Ошибка при запросе баланса:", error);
-    alert("Не удалось получить баланс: " + error.message);
-    return null;
-  }
-}
 
 async function playSlots(telegramId, bet) {
   try {
@@ -198,6 +223,32 @@ document.getElementById("daily-bonus").addEventListener("click", async () => {
   }
 });
 
+function createFireworks() {
+  const container = document.getElementById("fireworks-container");
+
+  for (let i = 0; i < 10; i++) {
+    const firework = document.createElement("div");
+    firework.classList.add("firework");
+
+    // Генерация случайной позиции и цвета
+    const randomX = Math.random() * 100 + "%";
+    const randomY = Math.random() * 100 + "%";
+    const colors = ["red", "blue", "green", "yellow", "purple"];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    firework.style.left = randomX;
+    firework.style.top = randomY;
+    firework.style.backgroundColor = randomColor;
+
+    container.appendChild(firework);
+
+    // Удаление фейерверка после завершения анимации
+    setTimeout(() => {
+      firework.remove();
+    }, 800);
+  }
+}
+
 async function fetchLeaderboard() {
   try {
     const response = await fetch("/api/leaderboard");
@@ -215,6 +266,7 @@ async function fetchLeaderboard() {
     console.error("Ошибка при загрузке таблицы лидеров:", error);
   }
 }
+
 
 // Загружаем таблицу лидеров при старте
 document.addEventListener("DOMContentLoaded", fetchLeaderboard);
