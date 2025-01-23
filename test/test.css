@@ -1,0 +1,34 @@
+@keyframes spin {
+  0% { transform: rotateX(0deg); }
+  25% { transform: rotateX(90deg); }
+  50% { transform: rotateX(180deg); }
+  75% { transform: rotateX(270deg); }
+  100% { transform: rotateX(360deg); }
+}
+
+<div class="symbol">🍒</div>
+<div class="symbol">🍋</div>
+<div class="symbol">🔔</div>
+<div class="symbol">⭐</div>
+<div class="symbol">🍉</div>
+</div>
+<div class="reel">
+<div class="symbol">🍒</div>
+<div class="symbol">🍋</div>
+<div class="symbol">🔔</div>
+<div class="symbol">⭐</div>
+<div class="symbol">🍉</div>
+</div>
+<div class="reel">
+<div class="symbol">🍒</div>
+<div class="symbol">🍋</div>
+<div class="symbol">🔔</div>
+<div class="symbol">⭐</div>
+<div class="symbol">🍉</div>
+</div>
+#result {
+  font-size: 1.5rem;
+  margin-top: 20px;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+<div class="container">  <div class="container">
