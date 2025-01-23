@@ -211,15 +211,12 @@ document.getElementById("daily-bonus").addEventListener("click", async () => {
     if (!response.ok) {
       throw new Error(result.error || "Не удалось получить бонус.");
     }
-
-    bonusMessage.textContent = "Ежедневный бонус успешно зачислен!";
-    bonusMessage.style.color = "green";
+    showNotification(`Ежедневный бонус успешно зачислен!`, "success");
     fetchBalance(telegramId).then((balance) => {
       document.getElementById("balance").innerText = `Ваш баланс: ${balance} монет`;
     })
   } catch (error) {
-    bonusMessage.textContent = error.message;
-    bonusMessage.style.color = "red";
+    showNotification(`Вы получали уже бонус (`, "error");
   }
 });
 
