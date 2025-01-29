@@ -8,11 +8,11 @@ from aiogram.filters import Command
 from aiogram.exceptions import TelegramAPIError
 from aiogram.client.default import DefaultBotProperties
 import logging
-import sqlite3
 from database import init_db, add_user, get_balance, update_balance
 import random
 from aiogram.types import Update
 import datetime
+import psycopg2
 
 if __name__ == "__main__":
     init_db()
@@ -20,6 +20,7 @@ if __name__ == "__main__":
 
 # Путь к базе данных
 DB_PATH = "casino_bot.db"
+DATABASE_URL = os.getenv('DATABASE_URL')
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -138,7 +139,7 @@ app.router.add_static("/static/", "./static")
 
 async def shop_handler(request):
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
         # Получаем товары из базы
@@ -162,11 +163,11 @@ async def buy_item_handler(request):
         if not telegram_id or not item_id:
             return web.json_response({"error": "telegram_id and item_id are required"}, status=400)
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
         # Получаем товар
-        cursor.execute("SELECT price FROM shop_items WHERE id = ?", (item_id,))
+        cursor.execute("SELECT price FROM shop_items WHERE id = %s", (item_id,))
         item = cursor.fetchone()
         if not item:
             conn.close()
@@ -175,14 +176,14 @@ async def buy_item_handler(request):
         price = item[0]
 
         # Проверяем баланс
-        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = %s", (telegram_id,))
         result = cursor.fetchone()
         if not result or result[0] < price:
             conn.close()
             return web.json_response({"error": "Insufficient balance"}, status=400)
 
         # Списываем монеты
-        cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (price, telegram_id))
+        cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = %s", (price, telegram_id))
         conn.commit()
         conn.close()
 
@@ -201,11 +202,11 @@ async def daily_bonus_handler(request):
         if not telegram_id:
             return web.json_response({"error": "telegram_id is required"}, status=400)
 
-        conn = sqlite3.connect(DB_PATH)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
         # Проверяем последнюю выдачу бонуса
-        cursor.execute("SELECT last_bonus FROM users WHERE telegram_id = ?", (telegram_id,))
+        cursor.execute("SELECT last_bonus FROM users WHERE telegram_id = %s", (telegram_id,))
         result = cursor.fetchone()
         if not result:
             conn.close()
@@ -219,8 +220,8 @@ async def daily_bonus_handler(request):
             return web.json_response({"error": "Вы уже забирали бонус сегодня"}, status=400)
 
         # Обновляем баланс и дату бонуса
-        cursor.execute("UPDATE users SET balance = balance + 100, last_bonus = ? WHERE telegram_id = ?", (today, telegram_id))
-        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        cursor.execute("UPDATE users SET balance = balance + 100, last_bonus = ? WHERE telegram_id = %s", (today, telegram_id))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = %s", (telegram_id,))
         new_balance = cursor.fetchone()[0]
 
         conn.commit()
@@ -236,7 +237,7 @@ app.router.add_get("/api/daily_bonus", daily_bonus_handler)
 
 async def leaderboard_handler(request):
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
         # Получаем топ-10 игроков по балансу
@@ -263,11 +264,11 @@ async def get_balance_handler(request):
             return web.json_response({"error": "telegram_id is required"}, status=400)
 
         # Подключение к базе данных
-        conn = sqlite3.connect(DB_PATH)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
         # Запрос баланса пользователя
-        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = %s", (telegram_id,))
         result = cursor.fetchone()
         conn.close()
 
@@ -298,11 +299,11 @@ async def slots(request):
             return web.json_response({"error": "telegram_id and bet are required"}, status=400)
 
         # Подключение к базе данных
-        conn = sqlite3.connect(DB_PATH)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cursor = conn.cursor()
 
         # Проверяем баланс пользователя
-        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = %s", (telegram_id,))
         result = cursor.fetchone()
         if not result:
             conn.close()
@@ -314,7 +315,7 @@ async def slots(request):
             return web.json_response({"error": "Insufficient balance"}, status=400)
 
         # Снимаем ставку
-        cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = ?", (bet, telegram_id))
+        cursor.execute("UPDATE users SET balance = balance - ? WHERE telegram_id = %s", (bet, telegram_id))
 
         # Генерация слотов
         SYMBOLS = ["🍒", "🍋", "🍊", "🍇", "⭐"]
@@ -330,8 +331,8 @@ async def slots(request):
             win_amount = bet * 2
 
         # Обновляем баланс
-        cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = ?", (win_amount, telegram_id))
-        cursor.execute("SELECT balance FROM users WHERE telegram_id = ?", (telegram_id,))
+        cursor.execute("UPDATE users SET balance = balance + ? WHERE telegram_id = %s", (win_amount, telegram_id))
+        cursor.execute("SELECT balance FROM users WHERE telegram_id = %s", (telegram_id,))
         new_balance = cursor.fetchone()[0]
         conn.commit()
         conn.close()
