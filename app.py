@@ -279,7 +279,7 @@ async def get_balance_handler(request):
         else:
             return web.json_response({"error": "User not found"}, status=404)
 
-    except sqlite3.Error as e:
+    except psycopg2.IntegrityError as e:
         return web.json_response({"error": f"Database error: {str(e)}"}, status=500)
 
     except Exception as e:
@@ -343,7 +343,7 @@ async def slots(request):
             "new_balance": new_balance
         })
 
-    except sqlite3.Error as e:
+    except psycopg2.IntegrityError as e:
         return web.json_response({"error": f"Database error: {str(e)}"}, status=500)
 
     except Exception as e:
