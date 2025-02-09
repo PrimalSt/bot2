@@ -153,8 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 2200);
       });
 
-
-
       // Показ сообщения о выигрыше
       setTimeout(() => {
         if (result.win_amount > 0) {
